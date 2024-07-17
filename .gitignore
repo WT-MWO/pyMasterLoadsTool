@@ -1,0 +1,5 @@
+reading.py
+__pycache__
+.venv/
+.vscode
+temp*
