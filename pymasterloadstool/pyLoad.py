@@ -1,6 +1,7 @@
 class pyLoad:
     def __init__(self):
         self.Name = " "  # Load type IRobotLoadType
+        self.type = -1
         self.LCName = " "  # Loadcase name
         self.objects = " "  # Objects node numbers, members, panels
         self.FX = 0  # Force value in X
@@ -29,11 +30,12 @@ class pyLoad:
         self.contourX = ""  # contour coordinates X
         self.contourY = ""  # contour coordinates Y
         self.contourZ = ""  # contour coordinates Z
-        self.entirestruc = 0  # self-weight entrire structure
+        self.entirestruc = 0  # self-weight entire structure
 
     def __repr__(self) -> dict:
         return str(
             {
+                "Type number": self.type,
                 "Load name": self.Name,
                 "Loadcase name": self.LCName,
                 "Objects": self.objects,

@@ -1,12 +1,12 @@
 import clr
 import sys
-from pyLoad import pyLoad
+from .pyLoad import pyLoad
 
 clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 from RobotOM import *
 import RobotOM as rbt
 
-from structure import Structure
+from .structure import Structure
 
 U = 1000  # divider to get kN
 
@@ -53,6 +53,13 @@ class Importer(Structure):
         else:
             return "relative"
 
+    def _check_type(self, rec):
+        rec_type = int(rec.Type)
+        if rec_type in self.supported_load_types:
+            return True
+        else:
+            return False
+
     def read_objects(self, rec):
         """Reads the objects to which the load is applied to. For example bar numbers."""
         objects = []
@@ -76,11 +83,12 @@ class Importer(Structure):
                 objects.append("objects")
         return objects
 
-    def store_load(self, lcase, rec):
+    def _store_load(self, lcase, rec):
         """Reads the load from the model, stores it in pyLoad object and returns them in list"""
         load = pyLoad()
         rec_type = int(rec.Type)  # cast it as a int
         load.LCName = lcase.Name
+        load.type = rec_type
         load.objects = self.read_objects(rec)  # read the objects load is assigned to
         if rec_type == 0:  # nodal force
             load.Name = self.supported_load_types[rec_type]
@@ -93,6 +101,21 @@ class Importer(Structure):
             load.alfa = rec.GetValue(8)  # I_NFIPRV_ALPHA
             load.beta = rec.GetValue(9)  # I_NFIPRV_BETA
             load.gamma = rec.GetValue(10)  # I_NFIPRV_GAMMA
+        elif rec_type == 5:  # uniform load
+            load.Name = self.supported_load_types[rec_type]
+            load.FX = rec.GetValue(0) / U
+            load.FY = rec.GetValue(1) / U
+            load.FZ = rec.GetValue(2) / U
+            load.Mx = rec.GetValue(3) / U
+            load.My = rec.GetValue(4) / U
+            load.Mz = rec.GetValue(5) / U
+            load.alfa = rec.GetValue(8)
+            load.beta = rec.GetValue(9)
+            load.gamma = rec.GetValue(10)
+            load.cosystem = self.read_cosystem(rec.GetValue(11))
+            load.absrel = self.read_relabs(rec.GetValue(13))
+            load.disY = rec.GetValue(21)
+            load.disZ = rec.GetValue(22)
         elif rec_type == 26:  # uniform load on a FE element
             load.Name = self.supported_load_types[rec_type]
             load.PX = rec.GetValue(0) / U  # I_URV_PX
@@ -120,7 +143,7 @@ class Importer(Structure):
             load.disX = rec.GetValue(6)  # I_BFCRV_X
             load.disY = rec.GetValue(21)  # I_BFCRV_OFFSET_Y
             load.disZ = rec.GetValue(22)  # I_BFCRV_OFFSET_Z
-        elif rec_type == 6:
+        elif rec_type == 6:  # "trapezoidal load (2p)"
             load.Name = self.supported_load_types[rec_type]
             load.PX = rec.GetValue(3) / U  # I_BTRV_PX1
             load.PY = rec.GetValue(4) / U  # I_BTRV_PY1
@@ -135,7 +158,7 @@ class Importer(Structure):
             load.gamma = rec.GetValue(10)  # I_BTRV_GAMMA
             load.projected = rec.GetValue(12)  # I_BTRV_PROJECTION
             load.absrel = self.read_relabs(rec.GetValue(13))  # I_BTRV_RELATIVE
-        elif rec_type == 69:
+        elif rec_type == 69:  # (FE) 2 load on edges
             load.Name = self.supported_load_types[rec_type]
             load.PX = rec.GetValue(0) / U  # I_LOERV_PX
             load.PY = rec.GetValue(1) / U  # I_LOERV_PY
@@ -145,7 +168,7 @@ class Importer(Structure):
             load.Mz = rec.GetValue(5) / U  # I_LOERV_MZ
             load.gamma = rec.GetValue(6)  # I_LOERV_GAMMA
             load.cosystem = self.read_cosystem(rec.GetValue(11))  # I_LOERV_LOCAL_SYSTEM
-        elif rec_type == 89:
+        elif rec_type == 89:  # "Body forces"
             load.Name = self.supported_load_types[rec_type]
             load.FX = rec.GetValue(0)
             load.FY = rec.GetValue(1)
@@ -168,7 +191,8 @@ class Importer(Structure):
                 for r in range(1, lcase.Records.Count + 1):
                     # Get load record
                     rec = lcase.Records.Get(r)
-                    records.append(self.store_load(lcase, rec))
+                    if self._check_type(rec):
+                        records.append(self._store_load(lcase, rec))
         return records
 
 
@@ -177,6 +201,6 @@ if __name__ == "__main__":
     # pyrobot = pyARSAReporting(app)
     importer = Importer(app)
     records = importer.get_load_records()
-
-    for r in records:
-        print(r)
+    print(records)
+    # for r in records:
+    #     print(r)
