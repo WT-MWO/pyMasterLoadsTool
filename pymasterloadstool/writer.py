@@ -19,12 +19,14 @@ class Writer:
         wb.save("test.xlsx")
 
     def _list_to_str(self, list):
+        # TODO: improve to remove '' as well
         return ", ".join(repr(e) for e in list)
 
     def _write_load(self, load, row):
         """writes a load into excel"""
         # string = "B" + str(row)
         self.ws["B" + str(row)] = load.LCName
+        self.ws["A" + str(row)] = load.LCNumber
         self.ws["H" + str(row)] = load.Name
         self.ws["I" + str(row)] = self._list_to_str(load.objects)
         if load.type == 0 or load.type == 3:  # nodal force or point load on a bar

@@ -3,6 +3,7 @@ class pyLoad:
         self.Name = " "  # Load type IRobotLoadType
         self.type = -1
         self.LCName = " "  # Loadcase name
+        self.LCNumber = ""  # Loadcase number
         self.objects = " "  # Objects node numbers, members, panels
         self.FX = 0  # Force value in X
         self.FY = 0  # Force value in Y
@@ -38,6 +39,7 @@ class pyLoad:
                 "Type number": self.type,
                 "Load name": self.Name,
                 "Loadcase name": self.LCName,
+                "Loadcase number": self.LCNumber,
                 "Objects": self.objects,
                 "Force value in X": self.FX,
                 "Force value in Y": self.FY,

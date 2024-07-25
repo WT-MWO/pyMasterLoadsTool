@@ -78,6 +78,7 @@ class Importer(Structure):
                     objects.append(rec.Objects.Get(r))
         else:
             if rec.GetValue(12) == 0:
+                # TODO: can this read real objects list? it is displayed in robot...seems like this is not possible
                 objects.append("all")
             else:
                 objects.append("objects")
@@ -88,6 +89,7 @@ class Importer(Structure):
         load = pyLoad()
         rec_type = int(rec.Type)  # cast it as a int
         load.LCName = lcase.Name
+        load.LCNumber = lcase.Number
         load.type = rec_type
         load.objects = self.read_objects(rec)  # read the objects load is assigned to
         if rec_type == 0:  # nodal force
