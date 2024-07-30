@@ -1,3 +1,6 @@
+missing_msg = "MISSING!!"
+
+
 class pyLoad:
     def __init__(self):
         self.Name = " "  # Load type IRobotLoadType
@@ -70,3 +73,48 @@ class pyLoad:
                 "SW entire stucture": self.entirestruc,
             }
         )
+
+
+def _zero_loads(load):
+    """Checks if all loads are not not equal to zero. Allows to ignore empty loads."""
+    loads = [
+        load.FX,
+        load.FY,
+        load.FZ,
+        load.Mx,
+        load.My,
+        load.Mz,
+        load.PX,
+        load.PY,
+        load.PZ,
+        load.PX2,
+        load.PY2,
+        load.PZ2,
+    ]
+    if load.type != 7:
+        return all(abs(val) < 0.001 for val in loads)
+    else:
+        return False
+
+
+def _missing_objects(load):
+    """Checks if load record contains any objects assigned"""
+    return load.objects[0] == missing_msg
+
+
+def invalid_load(load, ignore_missing=True):
+    if ignore_missing:
+        if _missing_objects(load):
+            return True
+    return _zero_loads(load)
+
+    # if ignore_missing:
+    #     if self._missing_objects or self._zero_loads():
+    #         return True
+    #     else:
+    #         return False
+    # else:
+    #     if self._zero_loads:
+    #         return True
+    #     else:
+    #         return False

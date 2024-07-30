@@ -1,4 +1,7 @@
 from openpyxl import Workbook, load_workbook
+from .pyLoad import invalid_load
+
+ignore_missing_objects = True  # that can be user input when GUI is ready
 
 
 class Writer:
@@ -14,13 +17,13 @@ class Writer:
         self.ws = wb["Load case definition"]
 
         for load in data:
-            self._write_load(load, start_row)
-            start_row += 1
+            if not invalid_load(load):
+                self._write_load(load, start_row)
+                start_row += 1
         wb.save("test.xlsx")
 
     def _list_to_str(self, list):
-        # TODO: improve to remove '' as well
-        return ", ".join(repr(e) for e in list)
+        return ", ".join(repr(e).replace("'", "") for e in list)
 
     def _write_load(self, load, row):
         """writes a load into excel"""
@@ -39,6 +42,7 @@ class Writer:
             self.ws["P" + str(row)] = load.alfa
             self.ws["Q" + str(row)] = load.beta
             self.ws["R" + str(row)] = load.gamma
+            # self.ws["V" + str(row)] = load.calcnode
         if load.type == 26:  # uniform load on a FE element
             self.ws["J" + str(row)] = load.PX
             self.ws["K" + str(row)] = load.PY
@@ -49,7 +53,7 @@ class Writer:
             self.ws["I" + str(row)] = load.entirestruc
         elif load.type == 3:  # point load on a bar
             self.ws["W" + str(row)] = load.cosystem
-            self.ws["W" + str(row)] = load.calcnode
+            self.ws["V" + str(row)] = load.calcnode
             self.ws["X" + str(row)] = load.absrel
             self.ws["S" + str(row)] = load.disX
             self.ws["T" + str(row)] = load.disY
@@ -82,6 +86,7 @@ class Writer:
             self.ws["R" + str(row)] = load.gamma
             self.ws["Y" + str(row)] = load.projected
             self.ws["X" + str(row)] = load.absrel
+            # self.ws["V" + str(row)] = load.calcnode
         elif load.type == 69:  # (FE) 2 load on edges
             self.ws["J" + str(row)] = load.PX
             self.ws["K" + str(row)] = load.PY

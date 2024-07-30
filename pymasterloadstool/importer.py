@@ -1,6 +1,6 @@
 import clr
 import sys
-from .pyLoad import pyLoad
+from .pyLoad import pyLoad, missing_msg
 
 clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 from RobotOM import *
@@ -9,6 +9,7 @@ import RobotOM as rbt
 from .structure import Structure
 
 U = 1000  # divider to get kN
+R = 2  # rounding
 
 
 class Importer(Structure):
@@ -72,7 +73,7 @@ class Importer(Structure):
                     obj = rec.Objects
                     objects.append(obj.ToText())
                 else:
-                    return "MISSING!!!"
+                    objects.append(missing_msg)
             else:
                 for r in range(1, count + 1):
                     objects.append(rec.Objects.Get(r))
@@ -94,23 +95,24 @@ class Importer(Structure):
         load.objects = self.read_objects(rec)  # read the objects load is assigned to
         if rec_type == 0:  # nodal force
             load.Name = self.supported_load_types[rec_type]
-            load.FX = rec.GetValue(0) / U  # I_NFIPRV_FX
-            load.FY = rec.GetValue(1) / U  # I_NFIPRV_FY
-            load.FZ = rec.GetValue(2) / U  # I_NFIPRV_FZ
-            load.Mx = rec.GetValue(3) / U  # I_NFIPRV_MX
-            load.My = rec.GetValue(4) / U  # I_NFIPRV_MY
-            load.Mz = rec.GetValue(5) / U  # I_NFIPRV_MZ
+            load.FX = round(rec.GetValue(0) / U, R)  # I_NFIPRV_FX
+            load.FY = round(rec.GetValue(1) / U, R)  # I_NFIPRV_FY
+            load.FZ = round(rec.GetValue(2) / U, R)  # I_NFIPRV_FZ
+            load.Mx = round(rec.GetValue(3) / U, R)  # I_NFIPRV_MX
+            load.My = round(rec.GetValue(4) / U, R)  # I_NFIPRV_MY
+            load.Mz = round(rec.GetValue(5) / U, R)  # I_NFIPRV_MZ
             load.alfa = rec.GetValue(8)  # I_NFIPRV_ALPHA
             load.beta = rec.GetValue(9)  # I_NFIPRV_BETA
             load.gamma = rec.GetValue(10)  # I_NFIPRV_GAMMA
+            # load.calcnode = self.read_calcnode(rec.GetValue(12))
         elif rec_type == 5:  # uniform load
             load.Name = self.supported_load_types[rec_type]
-            load.FX = rec.GetValue(0) / U
-            load.FY = rec.GetValue(1) / U
-            load.FZ = rec.GetValue(2) / U
-            load.Mx = rec.GetValue(3) / U
-            load.My = rec.GetValue(4) / U
-            load.Mz = rec.GetValue(5) / U
+            load.FX = round(rec.GetValue(0) / U, R)
+            load.FY = round(rec.GetValue(1) / U, R)
+            load.FZ = round(rec.GetValue(2) / U, R)
+            load.Mx = round(rec.GetValue(3) / U, R)
+            load.My = round(rec.GetValue(4) / U, R)
+            load.Mz = round(rec.GetValue(5) / U, R)
             load.alfa = rec.GetValue(8)
             load.beta = rec.GetValue(9)
             load.gamma = rec.GetValue(10)
@@ -120,9 +122,9 @@ class Importer(Structure):
             load.disZ = rec.GetValue(22)
         elif rec_type == 26:  # uniform load on a FE element
             load.Name = self.supported_load_types[rec_type]
-            load.PX = rec.GetValue(0) / U  # I_URV_PX
-            load.PY = rec.GetValue(1) / U  # I_URV_PY
-            load.PZ = rec.GetValue(2) / U  # I_URV_PZ
+            load.PX = round(rec.GetValue(0) / U, R)  # I_URV_PX
+            load.PY = round(rec.GetValue(1) / U, R)  # I_URV_PY
+            load.PZ = round(rec.GetValue(2) / U, R)  # I_URV_PZ
             load.cosystem = self.read_cosystem(rec.GetValue(11))  # I_URV_LOCAL_SYSTEM
             load.projected = rec.GetValue(12)  # I_URV_PROJECTION
         elif rec_type == 7:  # self-weight
@@ -130,12 +132,12 @@ class Importer(Structure):
             load.entirestruc = rec.GetValue(15)  # I_BDRV_ENTIRE_STRUCTURE
         elif rec_type == 3:  # point load on a bar
             load.Name = self.supported_load_types[rec_type]
-            load.FX = rec.GetValue(0) / U  # I_BFCRV_FX
-            load.FY = rec.GetValue(1) / U  # I_BFCRV_FY
-            load.FZ = rec.GetValue(2) / U  # I_BFCRV_FZ
-            load.Mx = rec.GetValue(3) / U  # I_BFCRV_CX
-            load.My = rec.GetValue(4) / U  # I_BFCRV_CY
-            load.Mz = rec.GetValue(5) / U  # I_BFCRV_CZ
+            load.FX = round(rec.GetValue(0) / U, R)  # I_BFCRV_FX
+            load.FY = round(rec.GetValue(1) / U, R)  # I_BFCRV_FY
+            load.FZ = round(rec.GetValue(2) / U, R)  # I_BFCRV_FZ
+            load.Mx = round(rec.GetValue(3) / U, R)  # I_BFCRV_CX
+            load.My = round(rec.GetValue(4) / U, R)  # I_BFCRV_CY
+            load.Mz = round(rec.GetValue(5) / U, R)  # I_BFCRV_CZ
             load.alfa = rec.GetValue(8)  # I_BFCRV_ALPHA
             load.beta = rec.GetValue(9)  # I_BFCRV_BETA
             load.gamma = rec.GetValue(10)  # I_BFCRV_GAMMA
@@ -147,12 +149,12 @@ class Importer(Structure):
             load.disZ = rec.GetValue(22)  # I_BFCRV_OFFSET_Z
         elif rec_type == 6:  # "trapezoidal load (2p)"
             load.Name = self.supported_load_types[rec_type]
-            load.PX = rec.GetValue(3) / U  # I_BTRV_PX1
-            load.PY = rec.GetValue(4) / U  # I_BTRV_PY1
-            load.PZ = rec.GetValue(5) / U  # I_BTRV_PZ1
-            load.PX2 = rec.GetValue(0) / U  # I_BTRV_PX2
-            load.PY2 = rec.GetValue(1) / U  # I_BTRV_PY2
-            load.PZ2 = rec.GetValue(2) / U  # I_BTRV_PZ2
+            load.PX = round(rec.GetValue(3) / U, R)  # I_BTRV_PX1
+            load.PY = round(rec.GetValue(4) / U, R)  # I_BTRV_PY1
+            load.PZ = round(rec.GetValue(5) / U, R)  # I_BTRV_PZ1
+            load.PX2 = round(rec.GetValue(0) / U, R)  # I_BTRV_PX2
+            load.PY2 = round(rec.GetValue(1) / U, R)  # I_BTRV_PY2
+            load.PZ2 = round(rec.GetValue(2) / U, R)  # I_BTRV_PZ2
             load.disX = rec.GetValue(7)  # I_BTRV_X1
             load.disX2 = rec.GetValue(6)  # I_BTRV_X2
             load.alfa = rec.GetValue(8)  # I_BTRV_ALPHA
@@ -162,19 +164,19 @@ class Importer(Structure):
             load.absrel = self.read_relabs(rec.GetValue(13))  # I_BTRV_RELATIVE
         elif rec_type == 69:  # (FE) 2 load on edges
             load.Name = self.supported_load_types[rec_type]
-            load.PX = rec.GetValue(0) / U  # I_LOERV_PX
-            load.PY = rec.GetValue(1) / U  # I_LOERV_PY
-            load.PZ = rec.GetValue(2) / U  # I_LOERV_PZ
-            load.Mx = rec.GetValue(3) / U  # I_LOERV_MX
-            load.My = rec.GetValue(4) / U  # I_LOERV_MY
-            load.Mz = rec.GetValue(5) / U  # I_LOERV_MZ
+            load.PX = round(rec.GetValue(0) / U, R)  # I_LOERV_PX
+            load.PY = round(rec.GetValue(1) / U, R)  # I_LOERV_PY
+            load.PZ = round(rec.GetValue(2) / U, R)  # I_LOERV_PZ
+            load.Mx = round(rec.GetValue(3) / U, R)  # I_LOERV_MX
+            load.My = round(rec.GetValue(4) / U, R)  # I_LOERV_MY
+            load.Mz = round(rec.GetValue(5) / U, R)  # I_LOERV_MZ
             load.gamma = rec.GetValue(6)  # I_LOERV_GAMMA
             load.cosystem = self.read_cosystem(rec.GetValue(11))  # I_LOERV_LOCAL_SYSTEM
         elif rec_type == 89:  # "Body forces"
             load.Name = self.supported_load_types[rec_type]
-            load.FX = rec.GetValue(0)
-            load.FY = rec.GetValue(1)
-            load.FZ = rec.GetValue(2)
+            load.FX = round(rec.GetValue(0), R)
+            load.FY = round(rec.GetValue(1), R)
+            load.FZ = round(rec.GetValue(2), R)
             load.absrel = self.read_relabs(rec.GetValue(13))  # I_BURV_RELATIVE
         return load
 
@@ -193,8 +195,12 @@ class Importer(Structure):
                 for r in range(1, lcase.Records.Count + 1):
                     # Get load record
                     rec = lcase.Records.Get(r)
-                    if self._check_type(rec):
-                        records.append(self._store_load(lcase, rec))
+                    # Check if load record is not auto generated from claddings loads
+                    rec_com = rbt.IRobotLoadRecordCommon(lcase.Records.Get(r))
+                    if not rec_com.IsAutoGenerated:
+                        # check if record is supported
+                        if self._check_type(rec):
+                            records.append(self._store_load(lcase, rec))
         return records
 
 

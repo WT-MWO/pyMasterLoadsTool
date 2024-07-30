@@ -4,3 +4,4 @@ __pycache__
 .vscode
 temp*
 test.xlsx
+test.py
