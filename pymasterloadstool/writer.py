@@ -1,7 +1,10 @@
 from openpyxl import Workbook, load_workbook
 from .pyLoad import invalid_load
+from pymasterloadstool import utilities
 
 ignore_missing_objects = True  # that can be user input when GUI is ready
+
+range_to_clear = ["A8:B1000", "H8:X1000"]
 
 
 class Writer:
@@ -12,10 +15,12 @@ class Writer:
 
     def write_data(self, data):
         start_row = 8
-        # final_column = "X"
         wb = load_workbook(self.path)
         self.ws = wb["Load case definition"]
-
+        # clear the range
+        for r in range_to_clear:
+            utilities.clear_range(self.ws, r)
+        # write the values
         for load in data:
             if not invalid_load(load):
                 self._write_load(load, start_row)
