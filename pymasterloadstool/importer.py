@@ -6,7 +6,7 @@ clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professio
 from RobotOM import *
 import RobotOM as rbt
 
-from .structure import Structure
+from .structure import Structure, supported_load_types
 
 U = 1000  # divider to get kN
 R = 2  # rounding
@@ -17,6 +17,7 @@ class Importer(Structure):
 
     def __init__(self, app):
         super().__init__(app)
+        self.supported_load_types = supported_load_types
 
     supported_analize_type = [
         rbt.IRobotCaseAnalizeType.I_CAT_STATIC_LINEAR,
@@ -25,16 +26,6 @@ class Importer(Structure):
     ]
 
     # rect = rbt.IRobotLoadRecordType
-    supported_load_types = {
-        0: "nodal force",  # rect.I_LRT_NODE_FORCE
-        5: "uniform load",  # rect.I_LRT_BAR_UNIFORM
-        26: "(FE) uniform",  # rect.I_LRT_UNIFORM
-        3: "member force",  # rect.I_LRT_BAR_FORCE_CONCENTRATED
-        7: "self-weight",  # rect.I_LRT_DEAD
-        6: "trapezoidal load (2p)",  # rect.I_LRT_BAR_TRAPEZOIDALE
-        69: "(FE) 2 load on edges",  # rect.I_LRT_LINEAR_ON_EDGES
-        89: "Body forces",  # rect.I_LRT_BAR_UNIFORM_MASS
-    }
 
     def read_cosystem(self, cosys):
         if cosys == 0:
