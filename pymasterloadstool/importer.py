@@ -1,5 +1,6 @@
 import clr
 import sys
+import math
 from .pyLoad import pyLoad, missing_msg
 
 clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
@@ -10,6 +11,7 @@ from .structure import Structure, supported_load_types
 
 U = 1000  # divider to get kN
 R = 2  # rounding
+rad_to_deg = 180 / math.pi
 
 
 class Importer(Structure):
@@ -102,6 +104,7 @@ class Importer(Structure):
             load.beta = rec.GetValue(9)
             load.gamma = rec.GetValue(10)
             load.cosystem = self.read_cosystem(rec.GetValue(11))
+            load.projected = rec.GetValue(12)
             load.absrel = self.read_relabs(rec.GetValue(13))
             load.disY = rec.GetValue(21)
             load.disZ = rec.GetValue(22)

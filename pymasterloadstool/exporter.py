@@ -1,3 +1,4 @@
+import math
 import clr
 
 clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
@@ -6,6 +7,9 @@ import RobotOM as rbt
 
 from .structure import Structure
 from .enums import cases_nature, case_analize_type
+
+M = 1000  # multiplier to get N or Pa
+deg_to_rad = math.pi / 180
 
 
 class Exporter(Structure):
@@ -58,3 +62,48 @@ class Exporter(Structure):
                 if c[6] is True:
                     params.PDelta = True
                 case.SetAnalysisParams(params)
+
+    def _assign_cosystem(self, load):
+        if load.cosystem == "global":
+            return 0
+        else:
+            return 1
+
+    def _assign_relabs(self, load):
+        if load.absrel == "absolute":
+            return 0
+        else:
+            return 1
+
+    def apply_loads(self, loads):
+        for load in loads:
+            if load.type == 7:
+                case_number = load.LCNumber
+                case = rbt.IRobotSimpleCase(self.structure.Cases.Get(case_number))
+                record_index = case.Records.New(rbt.IRobotLoadRecordType(7))
+                record = rbt.IRobotLoadRecord(case.Records.Get(record_index))
+                record.Objects.FromText(load.objects)
+                record.SetValue(15, 1)
+                record.SetValue(2, -1)
+            elif load.type == 0:
+                pass
+            elif load.type == 5:
+                case_number = load.LCNumber
+                # create load
+                case = rbt.IRobotSimpleCase(self.structure.Cases.Get(case_number))
+                record_index = case.Records.New(rbt.IRobotLoadRecordType(0))
+                record = case.Records.Get(record_index)
+                record.Objects.FromText(load.objects)
+                record.SetValue(0, load.FX * M)
+                record.SetValue(1, load.FY * M)
+                record.SetValue(2, load.FZ * M)
+                record.SetValue(3, load.Mx * M)
+                record.SetValue(4, load.My * M)
+                record.SetValue(5, load.Mz * M)
+                record.SetValue(8, load.alfa * deg_to_rad)
+                record.SetValue(9, load.beta * deg_to_rad)
+                record.SetValue(10, load.gamma * deg_to_rad)
+                record.SetValue(11, self._assign_cosystem(load))
+                record.SetValue(13, self._assign_relabs(load))
+                record.SetValue(21, load.disY)
+                record.SetValue(22, load.disZ)

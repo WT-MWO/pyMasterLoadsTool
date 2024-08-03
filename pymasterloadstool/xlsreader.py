@@ -19,6 +19,7 @@ class XlsReader:
         load.Name = name
         load.objects = self.ws["I" + str(row)].value
         load_type = list(supported_load_types.keys())[list(supported_load_types.values()).index(name)]
+        load.type = load_type
         if load_type == 0 or load_type == 3:  # nodal force or point load on a bar
             load.FX = self.ws["J" + str(row)].value
             load.FY = self.ws["K" + str(row)].value
