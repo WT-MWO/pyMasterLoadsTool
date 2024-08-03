@@ -13,17 +13,11 @@ R = 2  # rounding
 
 
 class Importer(Structure):
-    """Reads the loads from the model, imports them as a list of pyLoad objects."""
+    """Reads the loads and combinations from the model, imports them as a list of pyLoad objects."""
 
     def __init__(self, app):
         super().__init__(app)
         self.supported_load_types = supported_load_types
-
-    supported_analize_type = [
-        rbt.IRobotCaseAnalizeType.I_CAT_STATIC_LINEAR,
-        rbt.IRobotCaseAnalizeType.I_CAT_STATIC_NONLINEAR,
-        rbt.IRobotCaseAnalizeType.I_CAT_STATIC_LINEAR_AUXILIARY,
-    ]
 
     # rect = rbt.IRobotLoadRecordType
 

@@ -1,13 +1,10 @@
 from openpyxl import Workbook, load_workbook
 from .pyLoad import invalid_load
 from pymasterloadstool import utilities
-
-ignore_missing_objects = True  # that can be user input when GUI is ready
-
-range_to_clear = ["A8:B1000", "H8:X1000"]
+from .settings import load_sheet_name, range_to_clear
 
 
-class Writer:
+class XlsWriter:
     """Writes the loads to the excel sheet"""
 
     def __init__(self, excel_path):
@@ -16,7 +13,7 @@ class Writer:
     def write_data(self, data):
         start_row = 8
         wb = load_workbook(self.path)
-        self.ws = wb["Load case definition"]
+        self.ws = wb[load_sheet_name]
         # clear the range
         for r in range_to_clear:
             utilities.clear_range(self.ws, r)
@@ -110,4 +107,4 @@ class Writer:
 
 if __name__ == "__main__":
     path = r"C:\Users\mwo\OneDrive - WoodThilsted Partners\Professional\5_PYTHON\pyMasterLoadsTool\pyMaster_loads_tool.xlsx"
-    writer = Writer(path)
+    writer = XlsWriter(path)

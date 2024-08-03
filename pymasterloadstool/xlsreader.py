@@ -2,6 +2,7 @@ from openpyxl import Workbook, load_workbook
 from .utilities import max_row_index
 from .pyLoad import pyLoad
 from .structure import supported_load_types
+from .settings import load_sheet_name, cases_sheet_name
 
 
 class XlsReader:
@@ -87,11 +88,11 @@ class XlsReader:
             load.FZ = self.ws["L" + str(row)].value
             load.absrel = self.ws["X" + str(row)].value
 
-    def read_data(self):
+    def read_load_data(self):
         loads = []
         start_row = 8
-        wb = load_workbook(self.path)
-        self.ws = wb["Load case definition"]
+        wb = load_workbook(self.path, data_only=True)
+        self.ws = wb[load_sheet_name]
         row_count = max_row_index(self.ws, start_row, max_column=1)
         # clear the range
         load_range = "A" + str(start_row) + ":" + "X" + str(row_count)
@@ -102,8 +103,40 @@ class XlsReader:
             loads.append(load)
         return loads
 
+    def read_cases(self):
+        # loop through the rows in excel, list unique cases, numbers and natures
+        # store them in nested list
+        cases = []
+        start_row = 7
+        wb = load_workbook(self.path, data_only=True)
+        self.ws = wb[cases_sheet_name]
+        row_count = max_row_index(self.ws, start_row, max_column=1)
+        cases_range = "A" + str(start_row) + ":" + "A" + str(row_count)
+        for row in self.ws[cases_range]:
+            for cell in row:
+                # append 0-number,1-name,2-nature int, 3-nonlin, 4-solver, 5-kmatrix, 6-pdelta
+                number = self.ws["A" + str(cell.row)].value
+                name = self.ws["B" + str(cell.row)].value
+                nature = int(self.ws["D" + str(cell.row)].value)
+                nonlin = bool(int(self.ws["E" + str(cell.row)].value))
+                solver = int(self.ws["F" + str(cell.row)].value)
+                kmatrix = bool(int(self.ws["G" + str(cell.row)].value))
+                pdelta = bool(int(self.ws["H" + str(cell.row)].value))
+                cases.append(
+                    [
+                        number,
+                        name,
+                        nature,
+                        nonlin,
+                        solver,
+                        kmatrix,
+                        pdelta,
+                    ]
+                )
+        return cases
+
 
 if __name__ == "__main__":
     path = r"C:\Users\mwo\OneDrive - WoodThilsted Partners\Professional\5_PYTHON\pyMasterLoadsTool\test.xlsx"
     reader = XlsReader(path)
-    reader.read_data()
+    reader.read_load_data()
