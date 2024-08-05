@@ -27,18 +27,15 @@ app = RobotApplication()
 
 path = r"C:\Users\mwo\OneDrive - WoodThilsted Partners\Professional\5_PYTHON\pyMasterLoadsTool\pyMaster_loads_tool.xlsx"
 
-trigger = 0  # 0  for export, 1 for import
+trigger = 1  # 0  for export, 1 for import
 
 start_time = time.time()
 
 if trigger == 1:
     # import loads
-    import_load = importer.Importer(app)
-    records = import_load.get_load_records()
+    import_load = importer.Importer(app, path=path)
+    records = import_load.import_loads()
 
-    # write loads
-    write_loads = xlswriter.XlsWriter(path)
-    write_loads.write_data(records)
 else:
     # read loads
     read_xls_loads = xlsreader.XlsReader(path)
