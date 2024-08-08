@@ -25,3 +25,13 @@ supported_load_types = {
     69: "(FE) linear load on edges",  # rect.I_LRT_LINEAR_ON_EDGES
     89: "Body forces",  # rect.I_LRT_BAR_UNIFORM_MASS
 }
+
+supported_cases_nature = {
+    0: "dead",
+    1: "live",
+    2: "wind",
+    3: "snow",
+    4: "temperature",
+    5: "accidental",
+    6: "seismic",
+}
