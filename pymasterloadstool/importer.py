@@ -10,8 +10,8 @@ clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professio
 from RobotOM import *
 import RobotOM as rbt
 
-from .structure import Structure, supported_load_types
-from .settings import load_sheet_name, range_to_clear
+from .structure import Structure, supported_load_types, supported_cases_nature
+from .settings import load_sheet_name, range_to_clear, cases_sheet_name
 from pymasterloadstool import utilities
 from .enums import supported_analize_type
 
@@ -19,8 +19,6 @@ U = 1000  # divider to get kN
 R = 2  # rounding
 rad_to_deg = 180 / math.pi
 missing_msg = "MISSING!!"
-
-# TODO: import load cases to the separate tab
 
 
 class Importer(Structure):
@@ -175,15 +173,26 @@ class Importer(Structure):
     #     self._write_load(lcase, rec, current_row)
     #     wb.save("test.xlsx")
 
+    def _import_loadcases(self, cases):
+        ws_cases = self.wb[cases_sheet_name]
+        row = 7
+        for i in range(1, cases.Count + 1):
+            lcase = rbt.IRobotCase(cases.Get(i))
+            ws_cases["A" + str(row)] = lcase.Number
+            ws_cases["B" + str(row)] = lcase.Name
+            ws_cases["C" + str(row)] = supported_cases_nature[int(lcase.Nature)]
+            row += 1
+
     def import_loads(self):
         "Returns a list of load records of pyLoad object."
         start_row = 8
-        wb = load_workbook(self.path)
-        self.ws = wb[load_sheet_name]
+        self.wb = load_workbook(self.path)
+        self.ws = self.wb[load_sheet_name]
         # clear the range
         for r in range_to_clear:
             utilities.clear_range(self.ws, r)
         cases = self.structure.Cases.GetAll()
+        self._import_loadcases(cases)
         for i in range(1, cases.Count + 1):
             lcase = rbt.IRobotCase(cases.Get(i))
             # Make sure case is not a combination or not supported type
@@ -202,4 +211,4 @@ class Importer(Structure):
                         if self._check_type(rec):
                             self._write_load(lcase=lcase, rec=rec, row=start_row)
                             start_row += 1
-        wb.save("test.xlsx")
+        self.wb.save("test.xlsx")
