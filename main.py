@@ -21,7 +21,7 @@ clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professio
 from RobotOM import *
 import RobotOM as rbt
 
-from pymasterloadstool import importer, xlswriter, xlsreader
+from pymasterloadstool import importer
 
 app = RobotApplication()
 
@@ -36,11 +36,11 @@ if trigger == 1:
     import_load = importer.Importer(app, path=path)
     records = import_load.import_loads()
 
-else:
-    # read loads
-    read_xls_loads = xlsreader.XlsReader(path)
-    loads = read_xls_loads.read_data()
-    for l in loads:
-        print(l)
+# else:
+#     # read loads
+#     read_xls_loads = xlsreader.XlsReader(path)
+#     loads = read_xls_loads.read_data()
+#     for l in loads:
+#         print(l)
 
 print("--- %s seconds ---" % (time.time() - start_time))

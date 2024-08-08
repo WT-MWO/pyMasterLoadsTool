@@ -20,6 +20,8 @@ R = 2  # rounding
 rad_to_deg = 180 / math.pi
 missing_msg = "MISSING!!"
 
+# TODO: Import loadcase settings nlin etc.
+
 
 class Importer(Structure):
     """Reads the loads and combinations from the model, imports them as a list of pyLoad objects."""
