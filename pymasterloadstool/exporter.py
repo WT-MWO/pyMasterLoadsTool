@@ -59,17 +59,8 @@ class Exporter(Structure):
                 solver = int(self.ws["F" + str(cell.row)].value)
                 kmatrix = bool(int(self.ws["G" + str(cell.row)].value))
                 pdelta = bool(int(self.ws["H" + str(cell.row)].value))
-                cases.append(
-                    [
-                        number,
-                        name,
-                        nature,
-                        nonlin,
-                        solver,
-                        kmatrix,
-                        pdelta,
-                    ]
-                )
+                auxilary = bool(int(self.ws["I" + str(cell.row)].value))
+                cases.append([number, name, nature, nonlin, solver, kmatrix, pdelta, auxilary])
         return cases
 
     def _apply_load_cases(self, cases):
@@ -83,20 +74,31 @@ class Exporter(Structure):
             nature = cases_nature[c[2]]
             solver = case_analize_type[c[4]]
             case = self.structure.Cases.CreateSimple(number, name, nature, solver)
+            if c[7] is True:
+                case.IsAuxiliary = True
             # set parameters if solver is non-linear or buckling
             if c[4] == 2:
                 params = rbt.IRobotNonlinearAnalysisParams(case.GetAnalysisParams())
                 if c[5] is True:
                     params.MatrixUpdateAfterEachIteration = True
+                else:
+                    params.MatrixUpdateAfterEachIteration = False
                 if c[6] is True:
                     params.PDelta = True
+                else:
+                    params.PDelta = False
                 case.SetAnalysisParams(params)
+
             if c[4] == 4:
                 params = rbt.IRobotBucklingAnalysisParams(case.GetAnalysisParams())
                 if c[5] is True:
                     params.MatrixUpdateAfterEachIteration = True
+                else:
+                    params.MatrixUpdateAfterEachIteration = False
                 if c[6] is True:
                     params.PDelta = True
+                else:
+                    params.PDelta = False
                 case.SetAnalysisParams(params)
 
     def _assign_cosystem(self, cosystem_str):

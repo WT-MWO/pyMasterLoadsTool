@@ -100,9 +100,9 @@ class Importer(Structure):
             self.ws["M" + str(row)] = round(rec.GetValue(3) / U, R)  # I_NFIPRV_MX
             self.ws["N" + str(row)] = round(rec.GetValue(4) / U, R)  # I_NFIPRV_MY
             self.ws["O" + str(row)] = round(rec.GetValue(5) / U, R)  # I_NFIPRV_MZ
-            self.ws["P" + str(row)] = rec.GetValue(8)  # I_NFIPRV_ALPHA
-            self.ws["Q" + str(row)] = rec.GetValue(9)  # I_NFIPRV_BETA
-            self.ws["R" + str(row)] = rec.GetValue(10)  # I_NFIPRV_GAMMA
+            self.ws["P" + str(row)] = rec.GetValue(8) * rad_to_deg  # I_NFIPRV_ALPHA
+            self.ws["Q" + str(row)] = rec.GetValue(9) * rad_to_deg  # I_NFIPRV_BETA
+            self.ws["R" + str(row)] = rec.GetValue(10) * rad_to_deg  # I_NFIPRV_GAMMA
             # load.calcnode = self.read_calcnode(rec.GetValue(12))
         if rec_type == 5:  # uniform load
             self.ws["J" + str(row)] = round(rec.GetValue(0) / U, R)
@@ -111,9 +111,9 @@ class Importer(Structure):
             self.ws["M" + str(row)] = round(rec.GetValue(3) / U, R)
             self.ws["N" + str(row)] = round(rec.GetValue(4) / U, R)
             self.ws["O" + str(row)] = round(rec.GetValue(5) / U, R)
-            self.ws["P" + str(row)] = rec.GetValue(8)
-            self.ws["Q" + str(row)] = rec.GetValue(9)
-            self.ws["R" + str(row)] = rec.GetValue(10)
+            self.ws["P" + str(row)] = rec.GetValue(8) * rad_to_deg
+            self.ws["Q" + str(row)] = rec.GetValue(9) * rad_to_deg
+            self.ws["R" + str(row)] = rec.GetValue(10) * rad_to_deg
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))
             # load.projected = rec.GetValue(12)
             self.ws["X" + str(row)] = self._read_relabs(rec.GetValue(13))
@@ -143,9 +143,9 @@ class Importer(Structure):
             self.ws["L" + str(row)] = round(rec.GetValue(2) / U, R)  # I_BTRV_PZ2
             self.ws["T" + str(row)] = rec.GetValue(7)  # I_BTRV_X1
             self.ws["S" + str(row)] = rec.GetValue(6)  # I_BTRV_X2
-            self.ws["P" + str(row)] = rec.GetValue(8)  # I_BTRV_ALPHA
-            self.ws["Q" + str(row)] = rec.GetValue(9)  # I_BTRV_BETA
-            self.ws["R" + str(row)] = rec.GetValue(10)  # I_BTRV_GAMMA
+            self.ws["P" + str(row)] = rec.GetValue(8) * rad_to_deg  # I_BTRV_ALPHA
+            self.ws["Q" + str(row)] = rec.GetValue(9) * rad_to_deg  # I_BTRV_BETA
+            self.ws["R" + str(row)] = rec.GetValue(10) * rad_to_deg  # I_BTRV_GAMMA
             self.ws["Y" + str(row)] = rec.GetValue(12)  # I_BTRV_PROJECTION
             self.ws["X" + str(row)] = self._read_relabs(rec.GetValue(13))  # I_BTRV_RELATIVE
         elif rec_type == 69:  # (FE) 2 load on edges
@@ -180,9 +180,34 @@ class Importer(Structure):
         row = 7
         for i in range(1, cases.Count + 1):
             lcase = rbt.IRobotCase(cases.Get(i))
-            ws_cases["A" + str(row)] = lcase.Number
-            ws_cases["B" + str(row)] = lcase.Name
-            ws_cases["C" + str(row)] = supported_cases_nature[int(lcase.Nature)]
+            if lcase.Type == rbt.IRobotCaseType.I_CT_SIMPLE:
+                ws_cases["A" + str(row)] = lcase.Number
+                ws_cases["B" + str(row)] = lcase.Name
+                ws_cases["C" + str(row)] = supported_cases_nature[int(lcase.Nature)]
+                case = rbt.IRobotSimpleCase(lcase)
+                if case.IsAuxiliary:
+                    ws_cases["I" + str(row)] = 1
+                else:
+                    ws_cases["I" + str(row)] = 0
+                if case.AnalizeType == rbt.IRobotCaseAnalizeType.I_CAT_STATIC_LINEAR:
+                    ws_cases["E" + str(row)] = 0
+                    ws_cases["F" + str(row)] = 1
+                elif lcase.AnalizeType == rbt.IRobotCaseAnalizeType.I_CAT_STATIC_NONLINEAR:
+                    ws_cases["E" + str(row)] = 1
+                    ws_cases["F" + str(row)] = 2
+                    params = rbt.IRobotNonlinearAnalysisParams(case.GetAnalysisParams())
+                    if params.MatrixUpdateAfterEachIteration:
+                        ws_cases["G" + str(row)] = 1
+                    if params.PDelta:
+                        ws_cases["H" + str(row)] = 1
+                elif lcase.AnalizeType == rbt.IRobotCaseAnalizeType.I_CAT_STATIC_BUCKLING:
+                    ws_cases["E" + str(row)] = 0
+                    ws_cases["F" + str(row)] = 4
+                    params = rbt.IRobotBucklingAnalysisParams(case.GetAnalysisParams())
+                    if params.MatrixUpdateAfterEachIteration:
+                        ws_cases["G" + str(row)] = 1
+                    if params.PDelta:
+                        ws_cases["H" + str(row)] = 1
             row += 1
 
     def import_loads(self):
