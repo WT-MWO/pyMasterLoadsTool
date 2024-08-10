@@ -17,7 +17,7 @@
 import clr
 import time
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from tkinter.filedialog import askopenfile
 import os
 
@@ -25,7 +25,7 @@ clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professio
 from RobotOM import *
 import RobotOM as rbt
 
-from pymasterloadstool import importer
+from pymasterloadstool import importer, exporter
 
 root = tk.Tk()
 root.title("pyMasterLoadsTool")
@@ -35,29 +35,36 @@ main_frame = tk.Frame(root)
 main_frame.pack()
 
 
-# TODO: Implement GUI
+# TODO: Implement GUI - partially done
 # TODO: Implement combination import/exoport
 # TODO: Implement contour loads
 
-# app = RobotApplication()
+app = RobotApplication()
 
 # path = r"C:\Users\mwo\OneDrive - WoodThilsted Partners\Professional\5_PYTHON\pyMasterLoadsTool\pyMaster_loads_tool.xlsx"
 
-# trigger = 1  # 0  for export, 1 for import
 
 # start_time = time.time()
 
-# if trigger == 1:
-#     # import loads
-#     import_load = importer.Importer(app, path=path)
-#     records = import_load.import_loads()
 
-# else:
-#     # read loads
-#     read_xls_loads = xlsreader.XlsReader(path)
-#     loads = read_xls_loads.read_data()
-#     for l in loads:
-#         print(l)
+def check_path():
+    if filepath == "":
+        messagebox.showwarning(title="Warning", message="Please choose file path.")
+
+
+def import_loads():
+    # check_path()
+    # import loads
+    import_load = importer.Importer(app, path=filepath)
+    records = import_load.import_loads()
+
+
+def export_loads():
+    # check_path()
+    export_loads = exporter.Exporter(app, path=filepath)
+    export_loads._del_all_cases()
+    export_loads._del_all_combinations()
+    export_loads.export_load_and_cases()
 
 
 def open_file():
@@ -67,10 +74,10 @@ def open_file():
         filepath = os.path.abspath(file.name)
 
 
-# Executing script
-def run_script():
-    print(filepath)
-    pass
+# # Executing script
+# def run_script():
+#     print(filepath)
+#     pass
 
 
 def close_window():
@@ -94,10 +101,22 @@ label_1 = tk.Label(labels_frame, text="Import loads and/or combinations")
 label_1.grid(row=0, column=0, padx=5, pady=5)
 label_1 = tk.Label(labels_frame, text="Export loads and/or combinations")
 label_1.grid(row=1, column=0, padx=5, pady=5)
-run_button = tk.Button(labels_frame, text="Run", command=run_script, width=30)
+run_button = tk.Button(labels_frame, text="Run", command=import_loads, width=30)
 run_button.grid(row=0, column=1, sticky=tk.E, padx=5, pady=5)
-run_button = tk.Button(labels_frame, text="Run", command=run_script, width=30)
+run_button = tk.Button(labels_frame, text="Run", command=export_loads, width=30)
 run_button.grid(row=1, column=1, sticky=tk.E, padx=5, pady=5)
+
+# Timestamp frame
+timestamp_frame = tk.LabelFrame(main_frame, text="Choose macro")
+timestamp_frame.grid(row=2, column=0, sticky=tk.EW, padx=5, pady=5)
+info_label = tk.Label(
+    timestamp_frame,
+    text="Done. Excution time: ",
+    padx=5,
+    pady=5,
+    justify="left",
+)
+info_label.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
 # cancel_button = tk.Button(controls_frame, text="Cancel", command=close_window, width=10)
 # cancel_button.grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
 

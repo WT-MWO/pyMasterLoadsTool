@@ -238,4 +238,4 @@ class Importer(Structure):
                         if self._check_type(rec):
                             self._write_load(lcase=lcase, rec=rec, row=start_row)
                             start_row += 1
-        self.wb.save("test.xlsx")
+        self.wb.save(self.path)
