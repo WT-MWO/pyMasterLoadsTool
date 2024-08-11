@@ -1,23 +1,9 @@
-# main workflow
-
-# Import loads:
-# clean the spreadsheet - done
-# Read the loads - importer class - done
-# Write the excel - writer class - done
-# TODO: check if connection with Robot exist, raise error
-# TODO: implement load writing to Robot
-# TODO: check if angles of load are imported properly
-
-
-# Export loads:
-# clean all robot loads in the model
-# Read the excel - reader class
-# export loads -- exporter class
-
 import clr
 import time
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog as fd
+from tkinter import ttk
+from tkinter import messagebox
 from tkinter.filedialog import askopenfile
 import os
 
@@ -27,96 +13,122 @@ import RobotOM as rbt
 
 from pymasterloadstool import importer, exporter
 
-root = tk.Tk()
-root.title("pyMasterLoadsTool")
-root.geometry("500x420")
-# Main frame
-main_frame = tk.Frame(root)
-main_frame.pack()
-
 
 # TODO: Implement GUI - partially done
 # TODO: Implement combination import/exoport
 # TODO: Implement contour loads
 
-app = RobotApplication()
 
-# path = r"C:\Users\mwo\OneDrive - WoodThilsted Partners\Professional\5_PYTHON\pyMasterLoadsTool\pyMaster_loads_tool.xlsx"
-
-
-# start_time = time.time()
+# --------------------
+# Functions
+# --------------------
 
 
 def check_path():
-    if filepath == "":
-        messagebox.showwarning(title="Warning", message="Please choose file path.")
+    if path_var.get() == path_prompt:
+        messagebox.showwarning(title="Warning", message=path_prompt)
 
 
 def import_loads():
-    # check_path()
+    check_path()
+    status_msg.set("Processing...")
+    start_time = time.time()
     # import loads
-    import_load = importer.Importer(app, path=filepath)
-    records = import_load.import_loads()
+    import_load = importer.Importer(app, path=path_var)
+    import_load.import_loads()
+    end_time = time.time() - start_time
+    status_msg.set(
+        "Done. Exectution time %f" % end_time,
+    )
 
 
 def export_loads():
-    # check_path()
-    export_loads = exporter.Exporter(app, path=filepath)
+    status_msg.set("Processing...")
+    start_time = time.time()
+    check_path()
+    print(path_var.get())
+    export_loads = exporter.Exporter(app=app, path=path_var)
     export_loads._del_all_cases()
     export_loads._del_all_combinations()
     export_loads.export_load_and_cases()
+    end_time = time.time() - start_time
+    status_msg.set(
+        "Done. Exectution time %f" % end_time,
+    )
 
 
 def open_file():
-    file = filedialog.askopenfile(mode="r", filetypes=[("Excel", "*.xlsx")])
-    if file:
-        global filepath
-        filepath = os.path.abspath(file.name)
+    file = fd.askopenfilename(filetypes=[("Excel", "*.xlsx")])
+    path_var.set(file)
 
 
-# # Executing script
-# def run_script():
-#     print(filepath)
-#     pass
-
-
-def close_window():
+def close_window():  # not used
     root.destroy()
 
 
-# print("--- %s seconds ---" % (time.time() - start_time))
+# --------------------
+# Main code
+# --------------------
+
+root = tk.Tk()
+root.title("pyMasterLoadsTool")
+root.geometry("700x250")
+# Main frame
+main_frame = tk.Frame(root)
+main_frame.pack()
+
+# Initialize Robot connection
+app = RobotApplication()
+
+
+# Global variables
+path_prompt = "Please choose file path."
+path_var = tk.StringVar(value=path_prompt)
+status_msg = tk.StringVar(value=" ")
+
+
 # Input frame
 input_frame = tk.LabelFrame(main_frame, text="Path input")
 input_frame.grid(row=0, column=0, sticky=tk.EW, padx=5, pady=5)
-
-
+path_label = tk.Label(input_frame, textvariable=path_var)
 browse_button = tk.Button(input_frame, text="Browse for file", command=open_file, width=60)
-browse_button.grid(row=0, column=0, columnspan=2, sticky=tk.EW, padx=5, pady=5)
-# browse_button.place(anchor=tk.CENTER, relx=0.5, rely=0.5)
+# browse_button.grid(row=0, column=0, columnspan=2, sticky=tk.EW, padx=5, pady=5)
+browse_button.pack()
+path_label.pack()
 
 # Labels frame
 labels_frame = tk.LabelFrame(main_frame, text="Choose macro")
 labels_frame.grid(row=1, column=0, sticky=tk.EW, padx=5, pady=5)
+
 label_1 = tk.Label(labels_frame, text="Import loads and/or combinations")
 label_1.grid(row=0, column=0, padx=5, pady=5)
-label_1 = tk.Label(labels_frame, text="Export loads and/or combinations")
-label_1.grid(row=1, column=0, padx=5, pady=5)
-run_button = tk.Button(labels_frame, text="Run", command=import_loads, width=30)
-run_button.grid(row=0, column=1, sticky=tk.E, padx=5, pady=5)
-run_button = tk.Button(labels_frame, text="Run", command=export_loads, width=30)
-run_button.grid(row=1, column=1, sticky=tk.E, padx=5, pady=5)
+
+label_2 = tk.Label(labels_frame, text="Export loads and/or combinations")
+label_2.grid(row=1, column=0, padx=5, pady=5)
+
+run_import_button = tk.Button(labels_frame, text="Run", command=import_loads, width=30)
+run_import_button.grid(row=0, column=1, sticky=tk.E, padx=5, pady=5)
+
+run_export_button = tk.Button(labels_frame, text="Run", command=export_loads, width=30)
+
+run_export_button.grid(row=1, column=1, sticky=tk.E, padx=5, pady=5)
+
+# label_1.pack(side="left")
+# run_import_button.pack(side="left")
+# label_2.pack()
+# run_export_button.pack()
 
 # Timestamp frame
-timestamp_frame = tk.LabelFrame(main_frame, text="Choose macro")
+timestamp_frame = tk.LabelFrame(main_frame, text="Status")
 timestamp_frame.grid(row=2, column=0, sticky=tk.EW, padx=5, pady=5)
 info_label = tk.Label(
     timestamp_frame,
-    text="Done. Excution time: ",
+    textvariable=status_msg,
     padx=5,
     pady=5,
     justify="left",
 )
-info_label.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+info_label.pack()
 # cancel_button = tk.Button(controls_frame, text="Cancel", command=close_window, width=10)
 # cancel_button.grid(row=0, column=2, sticky=tk.W, padx=5, pady=5)
 
