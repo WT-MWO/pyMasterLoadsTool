@@ -35,3 +35,10 @@ supported_cases_nature = {
     5: "accidental",
     6: "seismic",
 }
+
+combination_type = {
+    0: "ULS",
+    1: "SLS",
+    2: "ALS",
+    3: "SPC",
+}

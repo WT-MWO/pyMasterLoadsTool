@@ -10,8 +10,8 @@ clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professio
 from RobotOM import *
 import RobotOM as rbt
 
-from .structure import Structure, supported_load_types, supported_cases_nature
-from .settings import load_sheet_name, range_to_clear, cases_sheet_name
+from .structure import Structure, supported_load_types, supported_cases_nature, combination_type
+from .settings import load_sheet_name, range_to_clear, cases_sheet_name, combinations_sheet_name
 from pymasterloadstool import utilities
 from .enums import supported_analize_type
 
@@ -60,6 +60,12 @@ class Importer(Structure):
 
     def _list_to_str(self, list):
         return ", ".join(repr(e).replace("'", "") for e in list)
+
+    def is_comb_nonlinear(self, lcase):
+        if int(lcase.AnalizeType) == -1 or int(lcase.AnalizeType) == -3:
+            return 1
+        else:
+            return 0
 
     def _read_objects(self, rec):
         """Reads the objects to which the load is applied to. For example bar numbers."""
@@ -209,6 +215,32 @@ class Importer(Structure):
                     if params.PDelta:
                         ws_cases["H" + str(row)] = 1
             row += 1
+
+    def import_combinations(self):
+        self.wb = load_workbook(self.path)
+        cases = self.structure.Cases.GetAll()
+        ws_comb = self.wb[combinations_sheet_name]
+        utilities.clear_range(ws_comb, "A7:XFD476")
+        row = 7
+        for i in range(1, cases.Count + 1):
+            lcase = rbt.IRobotCase(cases.Get(i))
+            # print(int(lcase.Type))
+            if int(lcase.Type) == 1:
+                # print(lcase.Type)
+                lcomb = rbt.IRobotCaseCombination(lcase)
+                ws_comb["A" + str(row)] = lcomb.Number
+                ws_comb["B" + str(row)] = lcomb.Name
+                ws_comb["C" + str(row)] = combination_type[int(lcomb.CombinationType)]
+                ws_comb["D" + str(row)] = self.is_comb_nonlinear(lcomb)
+                if self.is_comb_nonlinear(lcomb):
+                    params = rbt.IRobotNonlinearAnalysisParams(lcomb.GetAnalysisParams())
+                    if params.MatrixUpdateAfterEachIteration:
+                        ws_comb["F" + str(row)] = 1
+                    if params.PDelta:
+                        ws_comb["G" + str(row)] = 1
+                ws_comb["E" + str(row)] = int(lcomb.AnalizeType)
+                row += 1
+        self.wb.save(self.path)
 
     def import_loads(self):
         "Returns a list of load records of pyLoad object."
