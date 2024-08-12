@@ -170,23 +170,11 @@ class Importer(Structure):
             self.ws["L" + str(row)] = round(rec.GetValue(2), R)
             self.ws["X" + str(row)] = self._read_relabs(rec.GetValue(13))  # I_BURV_RELATIVE
 
-    # def _write_data(self, lcase, rec, row):
-    #     start_row = 8
-    #     wb = load_workbook(self.path)
-    #     self.ws = wb[load_sheet_name]
-    #     # clear the range
-    #     for r in range_to_clear:
-    #         utilities.clear_range(self.ws, r)
-    #         # write the values
-    #     current_row = start_row + row
-    #     self._write_load(lcase, rec, current_row)
-    #     wb.save("test.xlsx")
-
-    def _import_loadcases(self, lcase):
+    def _import_loadcases(self, cases):
         ws_cases = self.wb[cases_sheet_name]
         row = 7
-        #for i in range(1, cases.Count + 1): #loop1
-            #lcase = rbt.IRobotCase(cases.Get(i))
+        for i in range(1, cases.Count + 1):  # loop1
+            lcase = rbt.IRobotCase(cases.Get(i))
             if lcase.Type == rbt.IRobotCaseType.I_CT_SIMPLE:
                 ws_cases["A" + str(row)] = lcase.Number
                 ws_cases["B" + str(row)] = lcase.Name
@@ -217,14 +205,12 @@ class Importer(Structure):
                         ws_cases["H" + str(row)] = 1
             row += 1
 
-    def _import_combinations(self, lcase):
-        # self.wb = load_workbook(self.path)
-        # cases = self.structure.Cases.GetAll()
+    def _import_combinations(self, cases):
         ws_comb = self.wb[combinations_sheet_name]
         utilities.clear_range(ws_comb, "A7:XFD476")
         row = 7
-        #for i in range(1, cases.Count + 1): #loop2
-            #lcase = rbt.IRobotCase(cases.Get(i))
+        for i in range(1, cases.Count + 1):  # loop2
+            lcase = rbt.IRobotCase(cases.Get(i))
             # print(int(lcase.Type))
             if int(lcase.Type) == 1:
                 # print(lcase.Type)
@@ -257,8 +243,7 @@ class Importer(Structure):
                         self._write_load(lcase=lcase, rec=rec, row=start_row)
                         start_row += 1
 
-
-    def import_loads_and_comb(self, import_loads = True, import_comb=True):
+    def import_loads_and_comb(self, import_loads=True, import_comb=True):
         "Returns a list of load records of pyLoad object."
         self.ws = self.wb[load_sheet_name]
         # clear the range
@@ -266,16 +251,12 @@ class Importer(Structure):
             utilities.clear_range(self.ws, r)
         cases = self.structure.Cases.GetAll()
         # Import loadcases
-        #self._import_loadcases(cases)
+        self._import_loadcases(cases)
         # Import combinations
-        #if import_comb:
-        #    self._import_combinations(cases)
-        for i in range(1, cases.Count + 1): #loop3
+        if import_comb:
+            self._import_combinations(cases)
+        for i in range(1, cases.Count + 1):
             lcase = rbt.IRobotCase(cases.Get(i))
-            self._import_loadcases(lcase)
             if import_loads:
                 self._import_load(lcase)
-            if import_comb:
-                self._import_combinations(lcase)
-
         self.wb.save(self.path)
