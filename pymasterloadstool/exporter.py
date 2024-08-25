@@ -6,10 +6,10 @@ clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professio
 from RobotOM import *
 import RobotOM as rbt
 
-from .structure import Structure, supported_load_types
+from .structure import Structure, supported_load_types, combination_type
 from .enums import cases_nature, case_analize_type
-from .utilities import max_row_index
-from .settings import load_sheet_name, cases_sheet_name
+from .utilities import max_row_index, get_key, max_column_index
+from .settings import load_sheet_name, cases_sheet_name, combinations_sheet_name
 
 M = 1000  # multiplier to get N or Pa
 deg_to_rad = math.pi / 180
@@ -112,6 +112,12 @@ class Exporter(Structure):
             return 0
         else:
             return 1
+
+    def assign_comb_nature(self, type):
+        if type == 2:
+            return 1
+        else:
+            return 5
 
     def _assign_loads(self, cell):
         row = cell.row
@@ -246,6 +252,37 @@ class Exporter(Structure):
         for row in self.ws[load_range]:
             for cell in row:
                 self._assign_loads(cell)
+
+    def read_combinations(self):
+        self.ws_comb = self.wb[combinations_sheet_name]
+        start_row = 7
+        row_count = max_row_index(self.ws, start_row, max_column=1)
+        max_col = max_column_index(ws_comb, start_col=1, min_row=4, max_row=4)
+        combinations_range = "A" + str(start_row) + ":" + "A" + str(row_count)
+        combinations = []
+        for row in self.ws[combinations_range]:
+            for cell in row:
+                # append 0-number,1-name,2-nature int, 3-nonlin, 4-solver, 5-kmatrix, 6-pdelta
+                comb_number = self.ws["A" + str(cell.row)].value
+                comb_name = self.ws["B" + str(cell.row)].value
+                comb_type = get_key(combination_type, self.ws["C" + str(cell.row)].value)
+                comb_nature = self.assign_comb_nature(comb_type)
+                if self.ws["D" + str(cell.row)].value == 0:
+                    comb_analize_type = 0
+                    kmatrix = 0
+                    pdelta = 0
+                else:
+                    comb_analize_type = 1
+                    kmatrix = 1
+                    pdelta = 1
+
+    def read_factors(self, row_index):
+        for row in self.ws_comb.iter_rows(min_row=start_row, max_row=row_count, min_col=1, max_col=max_col):
+            for cell in row:
+                pass
+
+    def _apply_load_combinations(self):
+        pass
 
     def export_load_and_cases(self):
         self.wb = load_workbook(self.path, data_only=True)

@@ -287,15 +287,15 @@ class Importer(Structure):
         utilities.clear_range2(self.wb[combinations_sheet_name], min_row=7, max_row=476, min_col=1, max_col=500)
         # Get all loadcases from the model
         cases = self.structure.Cases.GetAll()
-        print("Getting all cases" + str(time.time() - start_time))
+        print("Getting all cases " + str(time.time() - start_time))
         # Import loadcases
         self._import_loadcases(cases)
-        print("Import loadcses" + str(time.time() - start_time))
+        print("Import loadcses " + str(time.time() - start_time))
         # Import combinations
         if import_comb:
             self._import_combinations(cases)
-            print("Import combinations" + str(time.time() - start_time))
+            print("Import combinations " + str(time.time() - start_time))
         if import_loads:
             self._import_load(cases)
-            print("Import loads" + str(time.time() - start_time))
+            print("Import loads " + str(time.time() - start_time))
         self.wb.save(self.path)

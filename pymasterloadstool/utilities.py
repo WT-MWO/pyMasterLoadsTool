@@ -8,6 +8,12 @@ def clear_range(ws, range):
             cell.value = None
 
 
+def get_key(dict, val):
+    for key, value in dict.items():
+        if val == value:
+            return key
+
+
 def clear_range2(ws, min_row=1, max_row=1, min_col=1, max_col=1):
     "Clear range much faster"
     for row in ws.iter_rows(min_row, max_row, min_col, max_col):
