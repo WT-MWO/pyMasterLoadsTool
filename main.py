@@ -14,8 +14,7 @@ import RobotOM as rbt
 from pymasterloadstool import importer, exporter
 
 
-# TODO: Implement GUI - partially done
-# TODO: Implement combination import/exoport
+# TODO: Implement combination export
 # TODO: Implement contour loads
 
 
