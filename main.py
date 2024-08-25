@@ -35,9 +35,7 @@ def import_loads():
     start_time = time.time()
     # import loads
     import_load = importer.Importer(app, path=path_var.get())
-    import_load.import_loads()
-    print(time.time() - start_time)
-    import_load.import_combinations()
+    import_load.import_loads_and_comb()
     end_time = time.time() - start_time
     status_msg.set(
         "Done. Exectution time %f" % end_time,
@@ -69,7 +67,7 @@ def close_window():  # not used
 
 
 # --------------------
-# Main code
+# Main GUI code
 # --------------------
 
 root = tk.Tk()
