@@ -1,6 +1,7 @@
 import math
 import clr
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
 
 clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 from RobotOM import *
@@ -21,6 +22,7 @@ class Exporter(Structure):
     def __init__(self, app, path):
         super().__init__(app)
         self.path = path
+        self.wb = load_workbook(self.path, data_only=True)
 
     def _del_all_cases(self):
         """Deletes all simple loadcases in the model"""
@@ -41,6 +43,7 @@ class Exporter(Structure):
         self.cases.DeleteMany(comb_selection)
 
     def _read_cases(self):
+        """Reads loadcases from Excel and stores the input in a list"""
         # loop through the rows in excel, list unique cases, numbers and natures
         # store them in nested list
         cases = []
@@ -66,9 +69,8 @@ class Exporter(Structure):
     def _apply_load_cases(self, cases):
         """Create load cases in the model
         Paremeters:
-        cases: list[number, name, nature string]"""
+        cases: list[0-number,1-name,2-nature int, 3-nonlin, 4-solver, 5-kmatrix, 6-pdelta, 7-auxilary]"""
         for c in cases:
-            # 0-number,1-name,2-nature int, 3-nonlin, 4-solver, 5-kmatrix, 6-pdelta
             number = c[0]
             name = c[1]
             nature = cases_nature[c[2]]
@@ -115,11 +117,12 @@ class Exporter(Structure):
 
     def assign_comb_nature(self, type):
         if type == 2:
-            return 1
-        else:
             return 5
+        else:
+            return 1
 
     def _assign_loads(self, cell):
+        """Export loads to the Robot model"""
         row = cell.row
         name = self.ws["H" + str(row)].value
         load_type = list(supported_load_types.keys())[list(supported_load_types.values()).index(name)]
@@ -253,21 +256,22 @@ class Exporter(Structure):
             for cell in row:
                 self._assign_loads(cell)
 
-    def read_combinations(self):
+    def _read_combinations(self):
+        """Read excel input and store it in a list"""
         self.ws_comb = self.wb[combinations_sheet_name]
         start_row = 7
-        row_count = max_row_index(self.ws, start_row, max_column=1)
-        max_col = max_column_index(ws_comb, start_col=1, min_row=4, max_row=4)
+        row_count = max_row_index(self.ws_comb, start_row, max_column=1)
+        max_col = max_column_index(self.ws_comb, start_col=1, min_row=3, max_row=3)
         combinations_range = "A" + str(start_row) + ":" + "A" + str(row_count)
         combinations = []
-        for row in self.ws[combinations_range]:
+        for row in self.ws_comb[combinations_range]:
             for cell in row:
                 # append 0-number,1-name,2-nature int, 3-nonlin, 4-solver, 5-kmatrix, 6-pdelta
-                comb_number = self.ws["A" + str(cell.row)].value
-                comb_name = self.ws["B" + str(cell.row)].value
-                comb_type = get_key(combination_type, self.ws["C" + str(cell.row)].value)
+                comb_number = self.ws_comb["A" + str(cell.row)].value
+                comb_name = self.ws_comb["B" + str(cell.row)].value
+                comb_type = get_key(combination_type, self.ws_comb["C" + str(cell.row)].value)
                 comb_nature = self.assign_comb_nature(comb_type)
-                if self.ws["D" + str(cell.row)].value == 0:
+                if self.ws_comb["D" + str(cell.row)].value == 0:
                     comb_analize_type = 0
                     kmatrix = 0
                     pdelta = 0
@@ -275,20 +279,61 @@ class Exporter(Structure):
                     comb_analize_type = 1
                     kmatrix = 1
                     pdelta = 1
+                factors = self._read_factors(row_index=cell.row, min_col=8, max_col=max_col)
+            combinations.append(
+                [comb_number, comb_name, comb_type, comb_nature, comb_analize_type, kmatrix, pdelta, factors]
+            )
+        return combinations
 
-    def read_factors(self, row_index):
-        for row in self.ws_comb.iter_rows(min_row=start_row, max_row=row_count, min_col=1, max_col=max_col):
+    def _read_factors(self, row_index, min_col, max_col):
+        "Reads Excel factor input table and stores the pairs in the list"
+        factors = []
+        for row in self.ws_comb.iter_rows(min_row=row_index, max_row=row_index, min_col=min_col, max_col=max_col):
             for cell in row:
-                pass
+                if cell.value is not None and cell.value != 0:
+                    factor = cell.value
+                    loadcase_number = self.ws_comb[cell.column_letter + "4"].value
+                    factors.append({loadcase_number: factor})
+        return factors
 
-    def _apply_load_combinations(self):
-        pass
+    def _apply_combinations(self, combinations):
+        """Export combinations to the Robot model"""
+        for c in combinations:
+            comb_number = c[0]
+            comb_name = c[1]
+            comb_type = rbt.IRobotCombinationType(c[2])
+            comb_nature = rbt.IRobotCaseNature(c[3])
+            comb_analize_type = rbt.IRobotCaseAnalizeType(c[4])
+            kmatrix = c[5]
+            pdelta = c[6]
+            factors = c[7]
+            combination = self.structure.Cases.CreateCombination(
+                comb_number, comb_name, comb_type, comb_nature, comb_analize_type
+            )
+            if comb_analize_type == 1:
+                params = rbt.IRobotNonlinearAnalysisParams(combination.GetAnalysisParams())
+                if kmatrix == 1:
+                    params.MatrixUpdateAfterEachIteration = True
+                if pdelta == 1:
+                    params.PDelta = True
+                combination.SetAnalysisParams(params)
+            # Apply factors
+            case_factor_mng = combination.CaseFactors
+            for f in factors:
+                for key in f.keys():
+                    case_factor_mng.New(key, f[key])
 
     def export_load_and_cases(self):
-        self.wb = load_workbook(self.path, data_only=True)
+        """Main function for export of loads and loadcases"""
+        # self.wb = load_workbook(self.path, data_only=True)
         # read cases from excel
         cases = self._read_cases()
         # apply cases to the model
         self._apply_load_cases(cases)
         # apply loads
         self._apply_loads()
+
+    def export_combinations(self):
+        """Main function for export load combinations"""
+        combinations = self._read_combinations()
+        self._apply_combinations(combinations=combinations)

@@ -37,7 +37,7 @@ def import_loads():
     import_load.import_loads_and_comb()
     end_time = time.time() - start_time
     status_msg.set(
-        "Done. Exectution time %f" % end_time,
+        "Done. Execution time %f" % end_time,
     )
 
 
@@ -50,9 +50,10 @@ def export_loads():
     export_loads._del_all_cases()
     export_loads._del_all_combinations()
     export_loads.export_load_and_cases()
+    export_loads.export_combinations()
     end_time = time.time() - start_time
     status_msg.set(
-        "Done. Exectution time %f" % end_time,
+        "Done. Execution time %f" % end_time,
     )
 
 

@@ -183,6 +183,7 @@ class Importer(Structure):
                 ws_cases["A" + str(row)] = lcase.Number
                 ws_cases["B" + str(row)] = lcase.Name
                 ws_cases["C" + str(row)] = supported_cases_nature[int(lcase.Nature)]
+                ws_cases["D" + str(row)] = int(lcase.Nature)
                 case = rbt.IRobotSimpleCase(lcase)
                 if case.IsAuxiliary:
                     ws_cases["I" + str(row)] = 1
@@ -191,22 +192,32 @@ class Importer(Structure):
                 if case.AnalizeType == rbt.IRobotCaseAnalizeType.I_CAT_STATIC_LINEAR:
                     ws_cases["E" + str(row)] = 0
                     ws_cases["F" + str(row)] = 1
+                    ws_cases["G" + str(row)] = 0
+                    ws_cases["H" + str(row)] = 0
                 elif lcase.AnalizeType == rbt.IRobotCaseAnalizeType.I_CAT_STATIC_NONLINEAR:
                     ws_cases["E" + str(row)] = 1
                     ws_cases["F" + str(row)] = 2
                     params = rbt.IRobotNonlinearAnalysisParams(case.GetAnalysisParams())
                     if params.MatrixUpdateAfterEachIteration:
                         ws_cases["G" + str(row)] = 1
+                    else:
+                        ws_cases["G" + str(row)] = 0
                     if params.PDelta:
                         ws_cases["H" + str(row)] = 1
+                    else:
+                        ws_cases["H" + str(row)] = 0
                 elif lcase.AnalizeType == rbt.IRobotCaseAnalizeType.I_CAT_STATIC_BUCKLING:
                     ws_cases["E" + str(row)] = 0
                     ws_cases["F" + str(row)] = 4
                     params = rbt.IRobotBucklingAnalysisParams(case.GetAnalysisParams())
                     if params.MatrixUpdateAfterEachIteration:
                         ws_cases["G" + str(row)] = 1
+                    else:
+                        ws_cases["G" + str(row)] = 0
                     if params.PDelta:
                         ws_cases["H" + str(row)] = 1
+                    else:
+                        ws_cases["H" + str(row)] = 0
                 row += 1
             # Propagating loadcases in combinations sheet
             col_letter = get_column_letter(col_index)
