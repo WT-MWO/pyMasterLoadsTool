@@ -70,6 +70,13 @@ class Importer(Structure):
         else:
             return 0
 
+    def read_contour_points(self, rec):
+        npoints = rec.GetValue(13)
+        contour_points = []
+        for p in range(1, npoints + 1):
+            contour_points.append(rec.GetContourPoint(p))
+        vector = rec.GetVector()
+
     def _read_objects(self, rec):
         """Reads the objects to which the load is applied to. For example bar numbers."""
         objects = []
@@ -171,6 +178,18 @@ class Importer(Structure):
             self.ws["K" + str(row)] = round(rec.GetValue(1), R)
             self.ws["L" + str(row)] = round(rec.GetValue(2), R)
             self.ws["X" + str(row)] = self._read_relabs(rec.GetValue(13))  # I_BURV_RELATIVE
+        elif rec_type == 28:  # "Load on contour"
+            self.ws["M" + str(row)] = round(rec.GetValue(0) / U, R)  # I_ICRV_PX1
+            self.ws["N" + str(row)] = round(rec.GetValue(1) / U, R)  # I_ICRV_PY1
+            self.ws["O" + str(row)] = round(rec.GetValue(2) / U, R)  # I_ICRV_PZ1
+            self.ws["J" + str(row)] = round(rec.GetValue(3) / U, R)  # I_ICRV_PX2
+            self.ws["K" + str(row)] = round(rec.GetValue(4) / U, R)  # I_ICRV_PY2
+            self.ws["L" + str(row)] = round(rec.GetValue(5) / U, R)  # I_ICRV_PZ2
+            self.ws["S" + str(row)] = round(rec.GetValue(6) / U, R)  # I_ICRV_PX3
+            self.ws["T" + str(row)] = round(rec.GetValue(7) / U, R)  # I_ICRV_PY3
+            self.ws["U" + str(row)] = round(rec.GetValue(8) / U, R)  # I_ICRV_PZ3
+            self.ws["Y" + str(row)] = rec.GetValue(12)  # I_ICRV_PROJECTION
+            self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(15))  # I_ICRV_LOCAL
 
     def _import_loadcases(self, cases):
         ws_cases = self.wb[cases_sheet_name]

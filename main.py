@@ -34,7 +34,7 @@ def import_loads():
     start_time = time.time()
     # import loads
     import_load = importer.Importer(app, path=path_var.get())
-    import_load.import_loads_and_comb()
+    import_load.import_loads_and_comb(import_loads=False, import_comb=True)
     end_time = time.time() - start_time
     status_msg.set(
         "Done. Execution time %f" % end_time,
@@ -47,9 +47,9 @@ def export_loads():
     check_path()
     print(path_var.get())
     export_loads = exporter.Exporter(app=app, path=path_var.get())
-    export_loads._del_all_cases()
+    # export_loads._del_all_cases()
     export_loads._del_all_combinations()
-    export_loads.export_load_and_cases()
+    # export_loads.export_load_and_cases()
     export_loads.export_combinations()
     end_time = time.time() - start_time
     status_msg.set(

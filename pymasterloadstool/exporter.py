@@ -276,9 +276,9 @@ class Exporter(Structure):
                     kmatrix = 0
                     pdelta = 0
                 else:
-                    comb_analize_type = 1
-                    kmatrix = 1
-                    pdelta = 1
+                    comb_analize_type = self.ws_comb["E" + str(cell.row)].value
+                    kmatrix = self.ws_comb["F" + str(cell.row)].value
+                    pdelta = self.ws_comb["G" + str(cell.row)].value
                 factors = self._read_factors(row_index=cell.row, min_col=8, max_col=max_col)
             combinations.append(
                 [comb_number, comb_name, comb_type, comb_nature, comb_analize_type, kmatrix, pdelta, factors]
@@ -307,9 +307,8 @@ class Exporter(Structure):
             kmatrix = c[5]
             pdelta = c[6]
             factors = c[7]
-            combination = self.structure.Cases.CreateCombination(
-                comb_number, comb_name, comb_type, comb_nature, comb_analize_type
-            )
+            cases = self.structure.Cases
+            combination = cases.CreateCombination(comb_number, comb_name, comb_type, comb_nature, comb_analize_type)
             if comb_analize_type == 1:
                 params = rbt.IRobotNonlinearAnalysisParams(combination.GetAnalysisParams())
                 if kmatrix == 1:
