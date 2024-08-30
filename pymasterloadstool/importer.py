@@ -305,7 +305,7 @@ class Importer(Structure):
                                 self._write_load(lcase=lsimplecase, rec=rec, row=start_row)
                                 start_row += 1
 
-    def import_loads_and_comb(self, import_loads=True, import_comb=True):
+    def import_loads_and_comb(self, import_loads, import_comb):
         "Returns a list of load records of pyLoad object."
         start_time = time.time()
         self.ws = self.wb[load_sheet_name]
@@ -322,10 +322,10 @@ class Importer(Structure):
         self._import_loadcases(cases)
         print("Import loadcses " + str(time.time() - start_time))
         # Import combinations
-        if import_comb:
+        if import_comb == 1:
             self._import_combinations(cases)
             print("Import combinations " + str(time.time() - start_time))
-        if import_loads:
+        if import_loads == 1:
             self._import_load(cases)
             print("Import loads " + str(time.time() - start_time))
         self.wb.save(self.path)

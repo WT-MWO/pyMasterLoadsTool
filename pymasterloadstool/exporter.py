@@ -322,17 +322,26 @@ class Exporter(Structure):
                 for key in f.keys():
                     case_factor_mng.New(key, f[key])
 
-    def export_load_and_cases(self):
+    def _export_load_and_cases(self):
         """Main function for export of loads and loadcases"""
         # self.wb = load_workbook(self.path, data_only=True)
         # read cases from excel
         cases = self._read_cases()
+        self._del_all_cases()
         # apply cases to the model
+        # if export_loads:
         self._apply_load_cases(cases)
         # apply loads
         self._apply_loads()
 
-    def export_combinations(self):
+    def _export_combinations(self):
         """Main function for export load combinations"""
         combinations = self._read_combinations()
+        self._del_all_combinations()
         self._apply_combinations(combinations=combinations)
+
+    def _export_load_cases_combinations(self, export_loads, export_combinations):
+        if export_loads == 1:
+            self._export_load_and_cases()
+        if export_combinations == 1:
+            self._export_combinations()
