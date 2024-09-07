@@ -6,7 +6,7 @@ clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professio
 from RobotOM import *
 import RobotOM as rbt
 
-from .structure import Structure, supported_load_types, combination_type
+from .structure import Structure, supported_load_types, combination_type, supported_cases_nature
 from .enums import cases_nature, case_analize_type
 from .utilities import max_row_index, get_key, max_column_index
 from .settings import load_sheet_name, cases_sheet_name, combinations_sheet_name
@@ -56,12 +56,13 @@ class Exporter(Structure):
                 # append 0-number,1-name,2-nature int, 3-nonlin, 4-solver, 5-kmatrix, 6-pdelta
                 number = self.ws["A" + str(cell.row)].value
                 name = self.ws["B" + str(cell.row)].value
-                nature = int(self.ws["D" + str(cell.row)].value)
-                nonlin = bool(int(self.ws["E" + str(cell.row)].value))
-                solver = int(self.ws["F" + str(cell.row)].value)
-                kmatrix = bool(int(self.ws["G" + str(cell.row)].value))
-                pdelta = bool(int(self.ws["H" + str(cell.row)].value))
-                auxilary = bool(int(self.ws["I" + str(cell.row)].value))
+                # nature = int(self.ws["D" + str(cell.row)].value)
+                nature = get_key(supported_cases_nature, self.ws["C" + str(cell.row)].value)
+                nonlin = bool(int(self.ws["D" + str(cell.row)].value))
+                solver = int(self.ws["E" + str(cell.row)].value)
+                kmatrix = bool(int(self.ws["F" + str(cell.row)].value))
+                pdelta = bool(int(self.ws["G" + str(cell.row)].value))
+                auxilary = bool(int(self.ws["H" + str(cell.row)].value))
                 cases.append([number, name, nature, nonlin, solver, kmatrix, pdelta, auxilary])
         return cases
 
