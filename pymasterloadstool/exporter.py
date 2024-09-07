@@ -1,7 +1,6 @@
 import math
 import clr
 from openpyxl import load_workbook
-from openpyxl.utils import get_column_letter
 
 clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 from RobotOM import *

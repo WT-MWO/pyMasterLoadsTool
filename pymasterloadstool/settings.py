@@ -4,4 +4,5 @@
 load_sheet_name = "Load definition"
 cases_sheet_name = "Load case definition"
 combinations_sheet_name = "Load combination"
+points_sheet_name = "Contour load data"
 ignore_missing_objects = True  # that can be user input when GUI is ready

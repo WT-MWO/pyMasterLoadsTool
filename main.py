@@ -13,8 +13,6 @@ import RobotOM as rbt
 
 from pymasterloadstool import importer, exporter
 
-
-# TODO: Implement combination export
 # TODO: Implement contour loads
 
 
@@ -37,9 +35,9 @@ def import_loads():
     import_load.import_loads_and_comb(
         import_loads=trigger_import_loads.get(), import_comb=trigger_import_combinations.get()
     )
-    end_time = time.time() - start_time
+    end_time = round(time.time() - start_time)
     status_msg.set(
-        "Done. Execution time %f" % end_time,
+        "Import done. Execution time %f sec." % end_time,
     )
 
 
@@ -50,9 +48,9 @@ def export_loads():
     print(path_var.get())
     export_loads = exporter.Exporter(app=app, path=path_var.get())
     export_loads._export_load_cases_combinations(trigger_export_loads.get(), trigger_export_combinations.get())
-    end_time = time.time() - start_time
+    end_time = round(time.time() - start_time, 0)
     status_msg.set(
-        "Done. Execution time %f" % end_time,
+        "Export done. Execution time %f sec." % end_time,
     )
 
 

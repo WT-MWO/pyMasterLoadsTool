@@ -1,5 +1,6 @@
-dict = [{1: 1.22}, {100: 1}, {104: 1.05}]
+lst1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 
-for d in dict:
-    for key in d.keys():
-        print(key, d[key])
+lst2 = [2.5, 0.5, 0.0, 3.5, 0.5, 0.0, 3.0, 1.0, 0.0]
+
+print(any(lst1))
+print(any(lst2))
