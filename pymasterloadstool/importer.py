@@ -107,8 +107,9 @@ class Importer(Structure):
                     column_index: int"""
         point_number = 1
         row = 3
-        load_identificator = "Row: " + str(load_number)
-        self.ws_points[get_column_letter(column_index) + "1"] = load_identificator
+        header = "Row: "
+        self.ws_points[get_column_letter(column_index) + "1"] = header
+        self.ws_points[get_column_letter(column_index + 1) + "1"] = str(load_number)
         self.ws_points[get_column_letter(column_index) + "2"] = "Point number"
         self.ws_points[get_column_letter(column_index + 1) + "2"] = "X"
         self.ws_points[get_column_letter(column_index + 2) + "2"] = "Y"

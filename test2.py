@@ -1,6 +1,10 @@
-lst1 = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+text = "A(-1, 2.5, 0.5, 0.0)"
 
-lst2 = [2.5, 0.5, 0.0, 3.5, 0.5, 0.0, 3.0, 1.0, 0.0]
+textlst = text[1:].replace("(", "").replace(")", "").split(",")
+# textlst = shrinked.split(",")
 
-print(any(lst1))
-print(any(lst2))
+converted = [float(i) for i in textlst]
+
+# print(shrinked)
+# print(textlst)
+print(converted)

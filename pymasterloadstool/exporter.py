@@ -1,6 +1,8 @@
 import math
 import clr
 from openpyxl import load_workbook
+from openpyxl.utils import get_column_letter
+import ctypes
 
 clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 from RobotOM import *
@@ -9,7 +11,7 @@ import RobotOM as rbt
 from .structure import Structure, supported_load_types, combination_type, supported_cases_nature
 from .enums import cases_nature, case_analize_type
 from .utilities import max_row_index, get_key, max_column_index
-from .settings import load_sheet_name, cases_sheet_name, combinations_sheet_name
+from .settings import load_sheet_name, cases_sheet_name, combinations_sheet_name, points_sheet_name
 
 M = 1000  # multiplier to get N or Pa
 deg_to_rad = math.pi / 180
@@ -22,6 +24,7 @@ class Exporter(Structure):
         super().__init__(app)
         self.path = path
         self.wb = load_workbook(self.path, data_only=True)
+        self.ws_points = self.wb[points_sheet_name]
 
     def _del_all_cases(self):
         """Deletes all simple loadcases in the model"""
@@ -115,17 +118,65 @@ class Exporter(Structure):
         else:
             return 1
 
-    def assign_comb_nature(self, type):
+    def _assign_comb_nature(self, type):
         if type == 2:
             return 5
         else:
             return 1
 
+    def _get_contour_column_number(self, row_id_number):
+        """Searches the first row of the Contour load data sheet and returns column number for matching row (load) id"""
+        for row in self.ws_points.iter_rows(1, 1, 1, 500):
+            for cell in row:
+                if cell.value == str(row_id_number):
+                    return cell.column
+
+    def _get_contour_points(self, row_id_number):
+        """ "Reads contour points for matching row (load) id, reutrns them in a list
+        [point_number, x, y, z]"""
+        points = []
+        load_points = []
+        point_number = 1
+        cell_column = self._get_contour_column_number(row_id_number)
+        nsize = max_row_index(self.ws_points, start_row=3, min_column=cell_column, max_column=cell_column)
+        contours_range = get_column_letter(cell_column) + "3" + ":" + get_column_letter(cell_column) + str(nsize)
+        for row in self.ws_points[contours_range]:
+            for cell in row:
+                # x = cell.value
+                # y = cell.offset(0, 1)
+                # z = cell.offset(0, 2)
+                points.append(
+                    [point_number, float(cell.value), float(cell.offset(0, 1).value), float(cell.offset(0, 2).value)]
+                )
+                load_points.append([point_number, cell.offset(0, 3).value])
+                point_number += 1
+        return points, load_points
+
+    def _assign_contour_points(self, load_record, row_id_number, is_3p=False):
+        """Assigns contour points and the 3p contour loads corners, A, B, C"""
+        points = self._get_contour_points(row_id_number)[0]
+        load_points = self._get_contour_points(row_id_number)[1]
+        nsize = len(points)
+        load_record.SetValue(13, nsize)  # assign size for point array I_ICRV_NPOINTS
+        for point in points:
+            load_record.SetContourPoint(point[0], point[1], point[2], point[3])
+        if is_3p:
+            corner_number = 1
+            for lp in load_points:
+                # the string from excel is like: A(-1, 2.5, 0.5, 0.0)
+                load_text = lp[1][1:].replace("(", "").replace(")", "").split(",")  # remove characters
+                load_lst = [float(i) for i in load_text]  # convert to numbers
+                load_record.SetPoint(corner_number, load_lst[1], load_lst[2], load_lst[3])
+                corner_number += 1
+
     def _assign_loads(self, cell):
         """Export loads to the Robot model"""
         row = cell.row
         name = self.ws["H" + str(row)].value
-        load_type = list(supported_load_types.keys())[list(supported_load_types.values()).index(name)]
+        if name == "load 3p on contour":
+            load_type = 28
+        else:
+            load_type = list(supported_load_types.keys())[list(supported_load_types.values()).index(name)]
         case_number = self.ws["A" + str(row)].value
         objects = self.ws["I" + str(row)].value
         case = rbt.IRobotSimpleCase(self.structure.Cases.Get(case_number))
@@ -231,10 +282,34 @@ class Exporter(Structure):
             record.SetValue(2, self.ws["L" + str(row)].value * M)  # Pz
             record.SetValue(13, self._assign_relabs(self.ws["X" + str(row)].value))  # relabs
         elif load_type == 28:  # load on contour
-            # record_index = case.Records.New(rbt.IRobotLoadRecordType(26))
-            # record = case.Records.Get(record_index)
-            # record.Objects.FromText(objects)
-            pass
+            record_index = case.Records.New(rbt.IRobotLoadRecordType(28))
+            record = rbt.IRobotLoadRecordInContour(case.Records.Get(record_index))
+            record.Objects.FromText(str(objects))
+            # print(record.Type)
+            # val = ctypes.c_int16(0xFFFFFFFF).value
+            # print(type(val), val)
+            record.SetVector(0, 0, -1)  # vector
+            # record.SetValue(
+            #     rbt.IRobotInContourRecordValues.I_ICRV_AUTO_DETECT_OBJECTS, 1
+            # )  # set I_ICRV_AUTO_DETECT_OBJECTS to True
+
+            if name != "load 3p on contour":
+                record.SetValue(0, self.ws["M" + str(row)].value * M)  # Px
+                record.SetValue(1, self.ws["N" + str(row)].value * M)  # Py
+                record.SetValue(2, self.ws["O" + str(row)].value * M)  # Pz
+                is_3p = False
+            else:
+                record.SetValue(3, self.ws["J" + str(row)].value * M)  # Px2
+                record.SetValue(4, self.ws["K" + str(row)].value * M)  # Py2
+                record.SetValue(5, self.ws["L" + str(row)].value * M)  # Pz2
+                record.SetValue(0, self.ws["M" + str(row)].value * M)  # Px1
+                record.SetValue(1, self.ws["N" + str(row)].value * M)  # Py1
+                record.SetValue(2, self.ws["O" + str(row)].value * M)  # Pz1
+                record.SetValue(6, self.ws["S" + str(row)].value * M)  # Px3
+                record.SetValue(7, self.ws["T" + str(row)].value * M)  # Py3
+                record.SetValue(8, self.ws["U" + str(row)].value * M)  # Pz3
+                is_3p = True
+            self._assign_contour_points(record, row, is_3p)
         elif load_type == 22:  # load planar trapez
             # record_index = case.Records.New(rbt.IRobotLoadRecordType(26))
             # record = case.Records.Get(record_index)
@@ -270,7 +345,7 @@ class Exporter(Structure):
                 comb_number = self.ws_comb["A" + str(cell.row)].value
                 comb_name = self.ws_comb["B" + str(cell.row)].value
                 comb_type = get_key(combination_type, self.ws_comb["C" + str(cell.row)].value)
-                comb_nature = self.assign_comb_nature(comb_type)
+                comb_nature = self._assign_comb_nature(comb_type)
                 if self.ws_comb["D" + str(cell.row)].value == 0:
                     comb_analize_type = 0
                     kmatrix = 0

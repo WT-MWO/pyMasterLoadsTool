@@ -21,13 +21,13 @@ def clear_range2(ws, min_row=1, max_row=1, min_col=1, max_col=1):
             cell.value = None
 
 
-def max_row_index(ws, start_row=1, max_column=1):
+def max_row_index(ws, start_row=1, max_row=1, min_column=1, max_column=1):
     """Returns last row index containing data."""
     if start_row == 1:
         count = 1
     else:
         count = start_row - 1
-    for row in ws.iter_rows(min_row=start_row, max_col=1, max_row=ws.max_row):
+    for row in ws.iter_rows(min_row=start_row, max_row=ws.max_row, min_col=min_column, max_col=max_column):
         for cell in row:
             if cell.value is not None:
                 count += 1
