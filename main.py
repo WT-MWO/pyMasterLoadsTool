@@ -17,7 +17,8 @@ import RobotOM as rbt
 from pymasterloadstool import importer, exporter
 
 # TODO: add more error catching handlers, is robot open? etc.
-
+# TODO: add Latex reporting
+# TODO: add screencapture
 # --------------------
 # Functions
 # --------------------
