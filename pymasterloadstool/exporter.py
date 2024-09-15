@@ -174,7 +174,7 @@ class Exporter(Structure):
                 corner_number += 1
 
     def _assign_loads(self, cell):
-        """Export loads to the Robot model"""
+        """Auxilary function to export one load to the Robot model"""
         row = cell.row
         name = self.ws["H" + str(row)].value
         if name == "load 3p on contour":
@@ -326,6 +326,7 @@ class Exporter(Structure):
             pass
 
     def _apply_loads(self):
+        """Applies the loads to the Robot model"""
         start_row = 8
         self.ws = self.wb[load_sheet_name]
         row_count = max_row_index(self.ws, start_row, max_column=1)
@@ -376,7 +377,7 @@ class Exporter(Structure):
         return factors
 
     def _apply_combinations(self, combinations):
-        """Export combinations to the Robot model"""
+        """Auxilary function to export one combination to the Robot model"""
         for c in combinations:
             comb_number = c[0]
             comb_name = c[1]
@@ -402,7 +403,7 @@ class Exporter(Structure):
                     case_factor_mng.New(key, f[key])
 
     def _export_load_and_cases(self):
-        """Main function for export of loads and loadcases"""
+        """Auxilary function for export of loads and loadcases"""
         # self.wb = load_workbook(self.path, data_only=True)
         # read cases from excel
         cases = self._read_cases()
@@ -414,12 +415,13 @@ class Exporter(Structure):
         self._apply_loads()
 
     def _export_combinations(self):
-        """Main function for export load combinations"""
+        """Auxilary function for export load combinations"""
         combinations = self._read_combinations()
         self._del_all_combinations()
         self._apply_combinations(combinations=combinations)
 
-    def _export_load_cases_combinations(self, export_loads, export_combinations):
+    def export_load_cases_combinations(self, export_loads, export_combinations):
+        """Main function to export"""
         if export_loads == 1:
             self._export_load_and_cases()
         if export_combinations == 1:

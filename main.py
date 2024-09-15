@@ -16,6 +16,8 @@ import RobotOM as rbt
 
 from pymasterloadstool import importer, exporter
 
+# TODO: add more error catching handlers, is robot open? etc.
+
 # --------------------
 # Functions
 # --------------------
@@ -47,7 +49,7 @@ def export_loads():
     check_path()
     print(path_var.get())
     export_loads = exporter.Exporter(app=app, path=path_var.get())
-    export_loads._export_load_cases_combinations(trigger_export_loads.get(), trigger_export_combinations.get())
+    export_loads.export_load_cases_combinations(trigger_export_loads.get(), trigger_export_combinations.get())
     end_time = round(time.time() - start_time, 0)
     status_msg.set(
         "Export done. Execution time %f sec." % end_time,
