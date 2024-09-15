@@ -2,13 +2,15 @@ import clr
 import sys
 import math
 import time
+import os
 
 # from .pyLoad import pyLoad, missing_msg
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
 
-
-clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
+cwd = os.getcwd()
+dll_path = cwd + "\dll\Interop.RobotOM.dll"
+clr.AddReference(dll_path)
 from RobotOM import *
 import RobotOM as rbt
 

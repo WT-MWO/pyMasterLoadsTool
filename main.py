@@ -7,14 +7,14 @@ from tkinter import messagebox
 from tkinter.filedialog import askopenfile
 import os
 
-clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
+# clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
+cwd = os.getcwd()
+dll_path = cwd + "\dll\Interop.RobotOM.dll"
+clr.AddReference(dll_path)
 from RobotOM import *
 import RobotOM as rbt
 
 from pymasterloadstool import importer, exporter
-
-# TODO: Implement contour loads
-
 
 # --------------------
 # Functions

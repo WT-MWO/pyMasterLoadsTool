@@ -1,10 +1,15 @@
-text = "A(-1, 2.5, 0.5, 0.0)"
+import os
 
-textlst = text[1:].replace("(", "").replace(")", "").split(",")
-# textlst = shrinked.split(",")
+dir_path = os.path.dirname(os.path.realpath(__file__))
+cwd = os.getcwd()
+# text = "A(-1, 2.5, 0.5, 0.0)"
 
-converted = [float(i) for i in textlst]
+# textlst = text[1:].replace("(", "").replace(")", "").split(",")
+# # textlst = shrinked.split(",")
+
+# converted = [float(i) for i in textlst]
 
 # print(shrinked)
 # print(textlst)
-print(converted)
+print(dir_path)
+print(cwd)
