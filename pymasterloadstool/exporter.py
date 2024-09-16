@@ -132,8 +132,14 @@ class Exporter(Structure):
         """Searches the first row of the Contour load data sheet and returns column number for matching row (load) id"""
         for row in self.ws_points.iter_rows(1, 1, 1, 500):
             for cell in row:
-                if cell.value == str(row_id_number):
-                    return cell.column
+                if cell.data_type == "s":
+                    if cell.value == str(row_id_number):
+                        # print(cell.data_type)
+                        return cell.column
+                elif cell.data_type == "n":
+                    if cell.value == row_id_number:
+                        # print(cell.data_type)
+                        return cell.column
 
     def _get_contour_points(self, row_id_number):
         """ "Reads contour points for matching row (load) id, reutrns them in a list
