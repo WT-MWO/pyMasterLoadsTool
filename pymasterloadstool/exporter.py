@@ -255,7 +255,7 @@ class Exporter(Structure):
             record.SetValue(11, self._assign_cosystem(self.ws["W" + str(row)].value))  # cosystem
             record.SetValue(12, self.ws["Y" + str(row)].value)  # projected
         elif load_type == 6:  # trapezoidal load (2p)
-            record_index = case.Records.New(rbt.IRobotLoadRecordType(26))
+            record_index = case.Records.New(rbt.IRobotLoadRecordType(6))
             record = case.Records.Get(record_index)
             record.Objects.FromText(str(objects))
             record.SetValue(0, self.ws["J" + str(row)].value)  # Px2
@@ -272,7 +272,7 @@ class Exporter(Structure):
             record.SetValue(12, self.ws["Y" + str(row)].value)  # projected
             record.SetValue(13, self._assign_relabs(self.ws["X" + str(row)].value))
         elif load_type == 69:  # (FE) 2 load on edges
-            record_index = case.Records.New(rbt.IRobotLoadRecordType(26))
+            record_index = case.Records.New(rbt.IRobotLoadRecordType(69))
             record = case.Records.Get(record_index)
             record.Objects.FromText(str(objects))
             record.SetValue(0, self.ws["J" + str(row)].value * M)  # Px
@@ -284,7 +284,7 @@ class Exporter(Structure):
             record.SetValue(6, self.ws["R" + str(row)].value * deg_to_rad)  # gamma
             record.SetValue(11, self._assign_cosystem(self.ws["W" + str(row)].value))  # localsystem
         elif load_type == 89:  # "Body forces"
-            record_index = case.Records.New(rbt.IRobotLoadRecordType(26))
+            record_index = case.Records.New(rbt.IRobotLoadRecordType(89))
             record = case.Records.Get(record_index)
             record.Objects.FromText(str(objects))
             record.SetValue(0, self.ws["J" + str(row)].value * M)  # Px
@@ -321,12 +321,12 @@ class Exporter(Structure):
                 is_3p = True
             self._assign_contour_points(record, row, is_3p)
         elif load_type == 22:  # load planar trapez
-            # record_index = case.Records.New(rbt.IRobotLoadRecordType(26))
+            # record_index = case.Records.New(rbt.IRobotLoadRecordType(22))
             # record = case.Records.Get(record_index)
             # record.Objects.FromText(objects)
             pass
         elif load_type == 8:  # thermal
-            # record_index = case.Records.New(rbt.IRobotLoadRecordType(26))
+            # record_index = case.Records.New(rbt.IRobotLoadRecordType(8))
             # record = case.Records.Get(record_index)
             # record.Objects.FromText(objects)
             pass
