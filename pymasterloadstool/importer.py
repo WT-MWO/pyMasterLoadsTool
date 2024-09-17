@@ -396,24 +396,32 @@ class Importer(Structure):
         "Main function, imports loads and combinations to Excel sheet."
         start_time = time.time()
         self.ws = self.wb[load_sheet_name]
-        # Clear the ranges
-        utilities.clear_range2(self.ws, min_row=8, max_row=1000, min_col=1, max_col=2)
-        utilities.clear_range2(self.ws, min_row=8, max_row=1000, min_col=8, max_col=25)
-        utilities.clear_range2(self.wb[cases_sheet_name], min_row=7, max_row=1000, min_col=1, max_col=9)
-        utilities.clear_range2(self.wb[combinations_sheet_name], min_row=3, max_row=4, min_col=8, max_col=500)
-        utilities.clear_range2(self.wb[combinations_sheet_name], min_row=7, max_row=476, min_col=1, max_col=500)
-        utilities.clear_range2(self.wb[points_sheet_name], min_row=1, max_row=500, min_col=1, max_col=500)
+        # Clear the range for loadcases, which are always imported
+        utilities.clear_range2(
+            self.wb[cases_sheet_name], min_row=7, max_row=1000, min_col=1, max_col=9
+        )  # Clearing cases
         # Get all loadcases from the model
         cases = self.structure.Cases.GetAll()
         print("Getting all cases " + str(time.time() - start_time))
-        # Import loadcases
+        # Import loadcases, this is always executed
         self._import_loadcases(cases)
         print("Import loadcses " + str(time.time() - start_time))
         # Import combinations
         if import_comb == 1:
+            utilities.clear_range2(
+                self.wb[combinations_sheet_name], min_row=3, max_row=4, min_col=8, max_col=500
+            )  # Clearing combinations upper row
+            utilities.clear_range2(
+                self.wb[combinations_sheet_name], min_row=7, max_row=476, min_col=1, max_col=500
+            )  # Clearing combinations factors
             self._import_combinations(cases)
             print("Import combinations " + str(time.time() - start_time))
         if import_loads == 1:
+            utilities.clear_range2(self.ws, min_row=8, max_row=1000, min_col=1, max_col=2)  # Clearing loads
+            utilities.clear_range2(self.ws, min_row=8, max_row=1000, min_col=8, max_col=25)  # Clearing loads
+            utilities.clear_range2(
+                self.wb[points_sheet_name], min_row=1, max_row=500, min_col=1, max_col=500
+            )  # Clearing load contour points
             self._import_load(cases)
             print("Import loads " + str(time.time() - start_time))
         self.wb.save(self.path)

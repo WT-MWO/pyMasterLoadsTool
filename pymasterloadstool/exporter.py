@@ -3,6 +3,7 @@ import clr
 from openpyxl import load_workbook
 from openpyxl.utils import get_column_letter
 import os
+import time
 
 # import ctypes
 
@@ -284,9 +285,9 @@ class Exporter(Structure):
             record.SetValue(6, self.ws["R" + str(row)].value * deg_to_rad)  # gamma
             record.SetValue(11, self._assign_cosystem(self.ws["W" + str(row)].value))  # localsystem
         elif load_type == 89:  # "Body forces"
-            record_index = case.Records.New(rbt.IRobotLoadRecordType(89))
+            record_index = case.Records.New(rbt.IRobotLoadRecordType(89, True))
             record = case.Records.Get(record_index)
-            record.Objects.FromText(str(objects))
+            # record.Objects.FromText(str(objects))
             record.SetValue(0, self.ws["J" + str(row)].value * M)  # Px
             record.SetValue(1, self.ws["K" + str(row)].value * M)  # Py
             record.SetValue(2, self.ws["L" + str(row)].value * M)  # Pz
@@ -428,7 +429,12 @@ class Exporter(Structure):
 
     def export_load_cases_combinations(self, export_loads, export_combinations):
         """Main function to export"""
+        start_time = time.time()
+        print("Starting....")
         if export_loads == 1:
             self._export_load_and_cases()
+            print("Loads and cases exported. " + str(time.time() - start_time))
         if export_combinations == 1:
+            print
             self._export_combinations()
+            print("Combinations exported. " + str(time.time() - start_time))
