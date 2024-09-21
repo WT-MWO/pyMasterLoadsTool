@@ -175,11 +175,11 @@ class Importer(Structure):
         else:
             if rec.GetValue(12) == 1:
                 objects.append(
-                    "masses! remove this row, convert masses to loads!"
+                    "converted from body force masses! remove this row, convert masses to loads!"
                 )  # body force is not supported, the load will be converted to self-weight during export
             else:
                 # if count more than 0 then read text objects
-                objects.append("objects, insert objects manually")
+                objects.append("converted from body force objects, insert objects manually")
         return objects
 
     def _write_load(self, lcase, rec, row, column_index):
