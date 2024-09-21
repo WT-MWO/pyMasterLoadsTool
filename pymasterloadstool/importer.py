@@ -144,21 +144,30 @@ class Importer(Structure):
         rect = int(rec.Type)
         # print(rect)
         if rect != 89:  # if not a Body force
-            count = rec.Objects.Count
-            if count == 0:
-                if rect == 69:  # in edge load case objects are empty but do contain text
+            if rect == 69:  # in edge load case objects are empty but do contain text
+                obj = rec.Objects
+                objects.append(obj.ToText())
+                # else:
+                #     objects.append(missing_msg)
+            if rect == 7:  # in edge load case objects are empty but do contain text
+                if rec.GetValue(15) == 1:
+                    objects.append("all")
+                else:
                     obj = rec.Objects
                     objects.append(obj.ToText())
-                else:
-                    objects.append(missing_msg)
+                # else:
+                #     objects.append(missing_ms
             else:
+                count = rec.Objects.Count
                 for r in range(1, count + 1):
                     objects.append(rec.Objects.Get(r))
         else:
             if rec.GetValue(12) == 0:
-                # TODO: can this read real objects list? it is displayed in robot...seems like this is not possible
-                objects.append("all")
+                objects.append(
+                    "insert object manually!"
+                )  # body force is not supported, the load will be converted to self-weight during export
             else:
+                # if count more than 0 then read text objects
                 objects.append("objects")
         return objects
 
@@ -208,7 +217,24 @@ class Importer(Structure):
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_URV_LOCAL_SYSTEM
             self.ws["Y" + str(row)] = rec.GetValue(12)  # I_URV_PROJECTION
         elif rec_type == 7:  # self-weight
-            self.ws["I" + str(row)] = rec.GetValue(15)  # I_BDRV_ENTIRE_STRUCTURE
+            acceleration_X = rec.GetValue(0)
+            acceleration_Y = rec.GetValue(1)
+            acceleration_Z = rec.GetValue(2)
+            factor = rec.GetValue(3)
+            if acceleration_X != 0:
+                self.ws["J" + str(row)] = factor * (math.copysign(1, acceleration_X))
+                self.ws["K" + str(row)] = 0
+                self.ws["L" + str(row)] = 0
+            if acceleration_Y != 0:
+                self.ws["J" + str(row)] = 0
+                self.ws["K" + str(row)] = factor * (math.copysign(1, acceleration_Y))
+                self.ws["L" + str(row)] = 0
+            if acceleration_Z != 0:
+                self.ws["J" + str(row)] = 0
+                self.ws["K" + str(row)] = 0
+                self.ws["L" + str(row)] = factor * (math.copysign(1, acceleration_Z))
+            # self.ws["I" + str(row)] = rec.GetValue(15)  # I_BDRV_ENTIRE_STRUCTURE
+
         elif rec_type == 3:  # point load on a bar
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_BFCRV_LOC
             self.ws["V" + str(row)] = self._read_calcnode(rec.GetValue(12))  # I_BFCRV_GENERATE_CALC_NODE
@@ -240,6 +266,10 @@ class Importer(Structure):
             self.ws["R" + str(row)] = rec.GetValue(6)  # I_LOERV_GAMMA
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_LOERV_LOCAL_SYSTEM
         elif rec_type == 89:  # "Body forces"
+            # need to be converted to dead load
+            # if x is != 0 then apply dead load in x direction
+            # and similar for others
+            # for objects just input some message about manual check
             self.ws["J" + str(row)] = round(rec.GetValue(0), R)
             self.ws["K" + str(row)] = round(rec.GetValue(1), R)
             self.ws["L" + str(row)] = round(rec.GetValue(2), R)
