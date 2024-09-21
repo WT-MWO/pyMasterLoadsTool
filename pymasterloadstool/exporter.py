@@ -194,9 +194,24 @@ class Exporter(Structure):
         if load_type == 7:
             record_index = case.Records.New(rbt.IRobotLoadRecordType(7))
             record = rbt.IRobotLoadRecord(case.Records.Get(record_index))
+            load_factor_X = self.ws["J" + str(row)].value
+            load_factor_Y = self.ws["K" + str(row)].value
+            load_factor_Z = self.ws["L" + str(row)].value
+            if load_factor_X != 0:
+                sign = math.copysign(1, load_factor_X)
+                record.SetValue(0, sign)
+                record.SetValue(3, load_factor_X)
+            elif load_factor_Y != 0:
+                sign = math.copysign(1, load_factor_Y)
+                record.SetValue(1, sign)
+                record.SetValue(3, load_factor_Y)
+            elif load_factor_Z != 0:
+                sign = math.copysign(1, load_factor_Z)
+                record.SetValue(2, sign)
+                record.SetValue(3, load_factor_Z)
             record.Objects.FromText(str(objects))
-            record.SetValue(15, 1)  # ???
-            record.SetValue(2, -1)  # ???
+            # record.SetValue(15, 1)  # ???
+            # ???
         elif load_type == 0:  # nodal force
             record_index = case.Records.New(rbt.IRobotLoadRecordType(0))
             record = case.Records.Get(record_index)

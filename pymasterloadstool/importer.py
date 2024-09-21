@@ -217,22 +217,22 @@ class Importer(Structure):
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_URV_LOCAL_SYSTEM
             self.ws["Y" + str(row)] = rec.GetValue(12)  # I_URV_PROJECTION
         elif rec_type == 7:  # self-weight
-            acceleration_X = rec.GetValue(0)
-            acceleration_Y = rec.GetValue(1)
-            acceleration_Z = rec.GetValue(2)
+            load_vector_X = rec.GetValue(0)
+            load_vector_Y = rec.GetValue(1)
+            load_vector_Z = rec.GetValue(2)
             factor = rec.GetValue(3)
-            if acceleration_X != 0:
-                self.ws["J" + str(row)] = factor * (math.copysign(1, acceleration_X))
+            if load_vector_X != 0:
+                self.ws["J" + str(row)] = factor * (math.copysign(1, load_vector_X))
                 self.ws["K" + str(row)] = 0
                 self.ws["L" + str(row)] = 0
-            if acceleration_Y != 0:
+            if load_vector_Y != 0:
                 self.ws["J" + str(row)] = 0
-                self.ws["K" + str(row)] = factor * (math.copysign(1, acceleration_Y))
+                self.ws["K" + str(row)] = factor * (math.copysign(1, load_vector_Y))
                 self.ws["L" + str(row)] = 0
-            if acceleration_Z != 0:
+            if load_vector_Z != 0:
                 self.ws["J" + str(row)] = 0
                 self.ws["K" + str(row)] = 0
-                self.ws["L" + str(row)] = factor * (math.copysign(1, acceleration_Z))
+                self.ws["L" + str(row)] = factor * (math.copysign(1, load_vector_Z))
             # self.ws["I" + str(row)] = rec.GetValue(15)  # I_BDRV_ENTIRE_STRUCTURE
 
         elif rec_type == 3:  # point load on a bar
