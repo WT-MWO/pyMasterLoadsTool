@@ -23,7 +23,7 @@ supported_load_types = {
     7: "self-weight",  # rect.I_LRT_DEAD
     6: "trapezoidal load (2p)",  # rect.I_LRT_BAR_TRAPEZOIDALE
     69: "(FE) linear load on edges",  # rect.I_LRT_LINEAR_ON_EDGES
-    89: "Body forces",  # rect.I_LRT_BAR_UNIFORM_MASS
+    89: "self-weight",  # body force not supported properly, converted to self-weight
     28: "load on contour",  # I_LRT_IN_CONTOUR
 }
 

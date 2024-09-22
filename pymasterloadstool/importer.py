@@ -1,8 +1,9 @@
+import tkinter.messagebox
 import clr
-import sys
 import math
 import time
 import os
+import tkinter
 
 # from .pyLoad import pyLoad, missing_msg
 from openpyxl import Workbook, load_workbook
@@ -38,6 +39,16 @@ class Importer(Structure):
         self.ws_points = self.wb[points_sheet_name]
 
     # rect = rbt.IRobotLoadRecordType
+
+    def messagebox(self, title, text):
+        """Warning type message box, closed with OK.
+        Arguments:
+        title(string) - title of the msgbox
+        text(string) - text to be inserted"""
+        root = tkinter.Tk()
+        root.withdraw()
+        tkinter.messagebox.showwarning(title, text)
+        root.destroy()
 
     def _read_cosystem(self, cosys):
         if cosys == 0:
@@ -144,22 +155,31 @@ class Importer(Structure):
         rect = int(rec.Type)
         # print(rect)
         if rect != 89:  # if not a Body force
-            count = rec.Objects.Count
-            if count == 0:
-                if rect == 69:  # in edge load case objects are empty but do contain text
+            if rect == 69:  # in edge load case objects are empty but do contain text
+                obj = rec.Objects
+                objects.append(obj.ToText())
+                # else:
+                #     objects.append(missing_msg)
+            if rect == 7:  # in edge load case objects are empty but do contain text
+                if rec.GetValue(15) == 1:
+                    objects.append("all")
+                else:
                     obj = rec.Objects
                     objects.append(obj.ToText())
-                else:
-                    objects.append(missing_msg)
+                # else:
+                #     objects.append(missing_ms
             else:
+                count = rec.Objects.Count
                 for r in range(1, count + 1):
                     objects.append(rec.Objects.Get(r))
         else:
-            if rec.GetValue(12) == 0:
-                # TODO: can this read real objects list? it is displayed in robot...seems like this is not possible
-                objects.append("all")
+            if rec.GetValue(12) == 1:
+                objects.append(
+                    "converted from body force masses! remove this row, convert masses to loads!"
+                )  # body force is not supported, the load will be converted to self-weight during export
             else:
-                objects.append("objects")
+                # if count more than 0 then read text objects
+                objects.append("converted from body force objects, insert objects manually")
         return objects
 
     def _write_load(self, lcase, rec, row, column_index):
@@ -208,7 +228,22 @@ class Importer(Structure):
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_URV_LOCAL_SYSTEM
             self.ws["Y" + str(row)] = rec.GetValue(12)  # I_URV_PROJECTION
         elif rec_type == 7:  # self-weight
-            self.ws["I" + str(row)] = rec.GetValue(15)  # I_BDRV_ENTIRE_STRUCTURE
+            load_vector_X = rec.GetValue(0)
+            load_vector_Y = rec.GetValue(1)
+            load_vector_Z = rec.GetValue(2)
+            factor = rec.GetValue(3)
+            if load_vector_X != 0:
+                self.ws["J" + str(row)] = factor * (math.copysign(1, load_vector_X))
+                self.ws["K" + str(row)] = 0
+                self.ws["L" + str(row)] = 0
+            if load_vector_Y != 0:
+                self.ws["J" + str(row)] = 0
+                self.ws["K" + str(row)] = factor * (math.copysign(1, load_vector_Y))
+                self.ws["L" + str(row)] = 0
+            if load_vector_Z != 0:
+                self.ws["J" + str(row)] = 0
+                self.ws["K" + str(row)] = 0
+                self.ws["L" + str(row)] = factor * (math.copysign(1, load_vector_Z))
         elif rec_type == 3:  # point load on a bar
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_BFCRV_LOC
             self.ws["V" + str(row)] = self._read_calcnode(rec.GetValue(12))  # I_BFCRV_GENERATE_CALC_NODE
@@ -240,10 +275,33 @@ class Importer(Structure):
             self.ws["R" + str(row)] = rec.GetValue(6)  # I_LOERV_GAMMA
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_LOERV_LOCAL_SYSTEM
         elif rec_type == 89:  # "Body forces"
-            self.ws["J" + str(row)] = round(rec.GetValue(0), R)
-            self.ws["K" + str(row)] = round(rec.GetValue(1), R)
-            self.ws["L" + str(row)] = round(rec.GetValue(2), R)
-            self.ws["X" + str(row)] = self._read_relabs(rec.GetValue(13))  # I_BURV_RELATIVE
+            # this load type is not fully supported, due to poor Robot API
+            # it gets converted to self-weight, only one record for one direction
+            self.messagebox(
+                "Warning",
+                "Body force load is not fully supported. It will be converted to self-weight, relative. Imported values need verification!",
+            )
+            relabs = rec.GetValue(13)
+            # self.ws["X" + str(row)] = self._read_relabs(relabs)  # not needed for self-weight conversion
+            if relabs == 1:
+                conversion = 9.81
+            else:
+                conversion = 1
+            load_vector_X = rec.GetValue(0)
+            load_vector_Y = rec.GetValue(1)
+            load_vector_Z = rec.GetValue(2)
+            if load_vector_X != 0:
+                self.ws["J" + str(row)] = load_vector_X / conversion
+                self.ws["K" + str(row)] = 0
+                self.ws["L" + str(row)] = 0
+            elif load_vector_Y != 0:
+                self.ws["J" + str(row)] = 0
+                self.ws["K" + str(row)] = load_vector_Y / conversion
+                self.ws["L" + str(row)] = 0
+            elif load_vector_Z != 0:
+                self.ws["J" + str(row)] = 0
+                self.ws["K" + str(row)] = 0
+                self.ws["L" + str(row)] = load_vector_Z / conversion
         elif rec_type == 28:  # "Load on contour"
             self.ws["M" + str(row)] = round(rec.GetValue(0) / U, R)  # I_ICRV_PX1
             self.ws["N" + str(row)] = round(rec.GetValue(1) / U, R)  # I_ICRV_PY1
@@ -336,7 +394,7 @@ class Importer(Structure):
         case_factor_mng = lcomb.CaseFactors
         for n in range(1, case_factor_mng.Count + 1):
             case_factor = case_factor_mng.Get(n)
-            comb_number = lcomb.Number
+            # comb_number = lcomb.Number # never used
             case_number = case_factor.CaseNumber
             case_factor = case_factor.Factor
             for row in ws[columns_range]:
