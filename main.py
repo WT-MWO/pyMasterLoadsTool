@@ -16,7 +16,7 @@ import RobotOM as rbt
 
 from pymasterloadstool import importer, exporter
 
-# TODO: add more error catching handlers, is robot open? etc.
+# TODO: add more error catching handlers
 # TODO: add Latex reporting
 # TODO: add screencapture
 # --------------------
@@ -29,7 +29,16 @@ def check_path():
         messagebox.showwarning(title="Warning", message=path_prompt)
 
 
+def check_connection():
+    try:
+        cases = app.Project.Structure.Cases.GetAll()
+    except Exception:
+        messagebox.showwarning(title="Warning", message="Cannot connect with Autodesk Robot!")
+        raise ValueError
+
+
 def import_loads():
+    check_connection()
     check_path()
     status_msg.set("Processing...")
     start_time = time.time()
@@ -45,9 +54,10 @@ def import_loads():
 
 
 def export_loads():
+    check_connection()
+    check_path()
     status_msg.set("Processing...")
     start_time = time.time()
-    check_path()
     print(path_var.get())
     export_loads = exporter.Exporter(app=app, path=path_var.get())
     export_loads.export_load_cases_combinations(trigger_export_loads.get(), trigger_export_combinations.get())
