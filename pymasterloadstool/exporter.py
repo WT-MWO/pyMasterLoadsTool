@@ -191,7 +191,7 @@ class Exporter(Structure):
         case_number = self.ws["A" + str(row)].value
         objects = self.ws["I" + str(row)].value
         case = rbt.IRobotSimpleCase(self.structure.Cases.Get(case_number))
-        if load_type == 7:
+        if load_type == 7:  # self-weight
             record_index = case.Records.New(rbt.IRobotLoadRecordType(7))
             record = rbt.IRobotLoadRecord(case.Records.Get(record_index))
             load_factor_X = self.ws["J" + str(row)].value
@@ -210,8 +210,6 @@ class Exporter(Structure):
                 record.SetValue(2, sign)
                 record.SetValue(3, load_factor_Z)
             record.Objects.FromText(str(objects))
-            # record.SetValue(15, 1)  # ???
-            # ???
         elif load_type == 0:  # nodal force
             record_index = case.Records.New(rbt.IRobotLoadRecordType(0))
             record = case.Records.Get(record_index)
@@ -299,7 +297,7 @@ class Exporter(Structure):
             record.SetValue(5, self.ws["O" + str(row)].value * M)  # Mz
             record.SetValue(6, self.ws["R" + str(row)].value * deg_to_rad)  # gamma
             record.SetValue(11, self._assign_cosystem(self.ws["W" + str(row)].value))  # localsystem
-        elif load_type == 89:  # "Body forces"
+        elif load_type == 89:  # "Body forces" # this is not used anymore
             record_index = case.Records.New(rbt.IRobotLoadRecordType(89, True))
             record = case.Records.Get(record_index)
             # record.Objects.FromText(str(objects))
@@ -311,13 +309,10 @@ class Exporter(Structure):
             record_index = case.Records.New(rbt.IRobotLoadRecordType(28))
             record = rbt.IRobotLoadRecordInContour(case.Records.Get(record_index))
             record.Objects.FromText(str(objects))
-            # print(record.Type)
-            # val = ctypes.c_int16(0xFFFFFFFF).value
-            # print(type(val), val)
             record.SetVector(0, 0, -1)  # vector
             # record.SetValue(
             #     rbt.IRobotInContourRecordValues.I_ICRV_AUTO_DETECT_OBJECTS, 1
-            # )  # set I_ICRV_AUTO_DETECT_OBJECTS to True
+            # )  # set I_ICRV_AUTO_DETECT_OBJECTS to True, this does not work properly
 
             if name != "load 3p on contour":
                 record.SetValue(0, self.ws["M" + str(row)].value * M)  # Px

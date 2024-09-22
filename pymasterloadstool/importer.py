@@ -244,8 +244,6 @@ class Importer(Structure):
                 self.ws["J" + str(row)] = 0
                 self.ws["K" + str(row)] = 0
                 self.ws["L" + str(row)] = factor * (math.copysign(1, load_vector_Z))
-            # self.ws["I" + str(row)] = rec.GetValue(15)  # I_BDRV_ENTIRE_STRUCTURE
-
         elif rec_type == 3:  # point load on a bar
             self.ws["W" + str(row)] = self._read_cosystem(rec.GetValue(11))  # I_BFCRV_LOC
             self.ws["V" + str(row)] = self._read_calcnode(rec.GetValue(12))  # I_BFCRV_GENERATE_CALC_NODE
@@ -284,7 +282,7 @@ class Importer(Structure):
                 "Body force load is not fully supported. It will be converted to self-weight, relative. Imported values need verification!",
             )
             relabs = rec.GetValue(13)
-            # self.ws["X" + str(row)] = self._read_relabs(relabs)  # not used needed for self-weight conversion
+            # self.ws["X" + str(row)] = self._read_relabs(relabs)  # not needed for self-weight conversion
             if relabs == 1:
                 conversion = 9.81
             else:
