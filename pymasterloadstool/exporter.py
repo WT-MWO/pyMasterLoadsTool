@@ -1,6 +1,7 @@
 import math
 import clr
 from openpyxl import load_workbook
+from openpyxl.cell import Cell
 from openpyxl.utils import get_column_letter
 import os
 import time
@@ -25,7 +26,7 @@ deg_to_rad = math.pi / 180
 class Exporter(Structure):
     """Exports the loads from the excel to the Robot model"""
 
-    def __init__(self, app, path):
+    def __init__(self, app: rbt.RobotApplicationClass, path: str) -> None:
         super().__init__(app)
         self.path = path
         self.wb = load_workbook(self.path, data_only=True)
@@ -36,10 +37,6 @@ class Exporter(Structure):
         case_selection = self.structure.Selections.CreatePredefined(
             rbt.IRobotPredefinedSelection.I_PS_CASE_SIMPLE_CASES
         )
-        # all_cases = self.cases.GetAll()
-        # for i in range(1, all_cases.Count + 1):
-        #     lcase = rbt.IRobotCase(all_cases.Get(i))
-        #     selection.Add(lcase)
         self.cases.DeleteMany(case_selection)
 
     def _del_all_combinations(self):
@@ -74,7 +71,7 @@ class Exporter(Structure):
                 cases.append([number, name, nature, nonlin, solver, kmatrix, pdelta, auxilary])
         return cases
 
-    def _apply_load_cases(self, cases):
+    def _apply_load_cases(self, cases: list[int, str, int, int, int, int, int, int]) -> None:
         """Create load cases in the model
         Paremeters:
         cases: list[0-number,1-name,2-nature int, 3-nonlin, 4-solver, 5-kmatrix, 6-pdelta, 7-auxilary]"""
@@ -111,25 +108,25 @@ class Exporter(Structure):
                     params.PDelta = False
                 case.SetAnalysisParams(params)
 
-    def _assign_cosystem(self, cosystem_str):
+    def _assign_cosystem(self, cosystem_str: str) -> int:
         if cosystem_str == "global":
             return 0
         else:
             return 1
 
-    def _assign_relabs(self, abrel_string):
+    def _assign_relabs(self, abrel_string: str) -> int:
         if abrel_string == "absolute":
             return 0
         else:
             return 1
 
-    def _assign_comb_nature(self, type):
+    def _assign_comb_nature(self, type: str) -> int:
         if type == 2:
             return 5
         else:
             return 1
 
-    def _get_contour_column_number(self, row_id_number):
+    def _get_contour_column_number(self, row_id_number: int) -> int:
         """Searches the first row of the Contour load data sheet and returns column number for matching row (load) id"""
         for row in self.ws_points.iter_rows(1, 1, 1, 500):
             for cell in row:
@@ -142,7 +139,7 @@ class Exporter(Structure):
                         # print(cell.data_type)
                         return cell.column
 
-    def _get_contour_points(self, row_id_number):
+    def _get_contour_points(self, row_id_number: int) -> list[list, list]:
         """ "Reads contour points for matching row (load) id, reutrns them in a list
         [point_number, x, y, z]"""
         points = []
@@ -163,7 +160,9 @@ class Exporter(Structure):
                 point_number += 1
         return points, load_points
 
-    def _assign_contour_points(self, load_record, row_id_number, is_3p=False):
+    def _assign_contour_points(
+        self, load_record: rbt.IRobotLoadRecordInContour, row_id_number: int, is_3p: bool = False
+    ) -> None:
         """Assigns contour points and the 3p contour loads corners, A, B, C"""
         points = self._get_contour_points(row_id_number)[0]
         load_points = self._get_contour_points(row_id_number)[1]
@@ -180,7 +179,7 @@ class Exporter(Structure):
                 load_record.SetPoint(corner_number, load_lst[1], load_lst[2], load_lst[3])
                 corner_number += 1
 
-    def _assign_loads(self, cell):
+    def _assign_loads(self, cell: Cell) -> None:
         """Auxilary function to export one load to the Robot model"""
         row = cell.row
         name = self.ws["H" + str(row)].value
@@ -297,7 +296,9 @@ class Exporter(Structure):
             record.SetValue(5, self.ws["O" + str(row)].value * M)  # Mz
             record.SetValue(6, self.ws["R" + str(row)].value * deg_to_rad)  # gamma
             record.SetValue(11, self._assign_cosystem(self.ws["W" + str(row)].value))  # localsystem
-        elif load_type == 89:  # "Body forces" # this is not used anymore
+        elif (
+            load_type == 89
+        ):  # "Body forces" # this is not used anymore TODO: add a messagebox warning when this is detected
             # record_index = case.Records.New(rbt.IRobotLoadRecordType(89, True))
             # record = case.Records.Get(record_index)
             # # record.Objects.FromText(str(objects))
@@ -313,7 +314,7 @@ class Exporter(Structure):
             record.SetVector(0, 0, -1)  # vector
             # record.SetValue(
             #     rbt.IRobotInContourRecordValues.I_ICRV_AUTO_DETECT_OBJECTS, 1
-            # )  # set I_ICRV_AUTO_DETECT_OBJECTS to True, this does not work properly
+            # )  # set I_ICRV_AUTO_DETECT_OBJECTS to True, this does not work properly, TODO: investigate
 
             if name != "load 3p on contour":
                 record.SetValue(0, self.ws["M" + str(row)].value * M)  # Px
@@ -332,18 +333,18 @@ class Exporter(Structure):
                 record.SetValue(8, self.ws["U" + str(row)].value * M)  # Pz3
                 is_3p = True
             self._assign_contour_points(record, row, is_3p)
-        elif load_type == 22:  # load planar trapez
+        elif load_type == 22:  # load planar trapez TODO: to be implemented
             # record_index = case.Records.New(rbt.IRobotLoadRecordType(22))
             # record = case.Records.Get(record_index)
             # record.Objects.FromText(objects)
             pass
-        elif load_type == 8:  # thermal
+        elif load_type == 8:  # thermal TODO: to be implemented
             # record_index = case.Records.New(rbt.IRobotLoadRecordType(8))
             # record = case.Records.Get(record_index)
             # record.Objects.FromText(objects)
             pass
 
-    def _apply_loads(self):
+    def _apply_loads(self) -> None:
         """Applies the loads to the Robot model"""
         start_row = 8
         self.ws = self.wb[load_sheet_name]
@@ -354,7 +355,7 @@ class Exporter(Structure):
             for cell in row:
                 self._assign_loads(cell)
 
-    def _read_combinations(self):
+    def _read_combinations(self) -> None:
         """Read excel input and store it in a list"""
         self.ws_comb = self.wb[combinations_sheet_name]
         start_row = 7
@@ -383,7 +384,7 @@ class Exporter(Structure):
             )
         return combinations
 
-    def _read_factors(self, row_index, min_col, max_col):
+    def _read_factors(self, row_index: int, min_col: int, max_col: int) -> list:
         "Reads Excel factor input table and stores the pairs in the list"
         factors = []
         for row in self.ws_comb.iter_rows(min_row=row_index, max_row=row_index, min_col=min_col, max_col=max_col):
@@ -394,7 +395,7 @@ class Exporter(Structure):
                     factors.append({loadcase_number: factor})
         return factors
 
-    def _apply_combinations(self, combinations):
+    def _apply_combinations(self, combinations: list[int, str, int, int, int, int, int, int]) -> None:
         """Auxilary function to export one combination to the Robot model"""
         for c in combinations:
             comb_number = c[0]
@@ -420,25 +421,20 @@ class Exporter(Structure):
                 for key in f.keys():
                     case_factor_mng.New(key, f[key])
 
-    def _export_load_and_cases(self):
+    def _export_load_and_cases(self) -> None:
         """Auxilary function for export of loads and loadcases"""
-        # self.wb = load_workbook(self.path, data_only=True)
-        # read cases from excel
         cases = self._read_cases()
         self._del_all_cases()
-        # apply cases to the model
-        # if export_loads:
         self._apply_load_cases(cases)
-        # apply loads
         self._apply_loads()
 
-    def _export_combinations(self):
+    def _export_combinations(self) -> None:
         """Auxilary function for export load combinations"""
         combinations = self._read_combinations()
         self._del_all_combinations()
         self._apply_combinations(combinations=combinations)
 
-    def export_load_cases_combinations(self, export_loads, export_combinations):
+    def export_load_cases_combinations(self, export_loads, export_combinations) -> None:
         """Main function to export"""
         start_time = time.time()
         print("Starting....")

@@ -6,6 +6,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter.filedialog import askopenfile
 import os
+import sys
 
 # clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 cwd = os.getcwd()
@@ -17,32 +18,41 @@ import RobotOM as rbt
 from pymasterloadstool import importer, exporter
 
 # TODO: add more error catching handlers
-# TODO: add Latex reporting
-# TODO: add screencapture
+# TODO: write tests
 
 # TODO: There is a problem with importing combinations
 # TODO: If loads are exported but no combinations, then loadcases should not be exported because the combinaitons are lost
-
 
 # --------------------
 # Functions
 # --------------------
 
 
-def check_path():
-    if path_var.get() == path_prompt:
-        messagebox.showwarning(title="Warning", message=path_prompt)
+def check_path() -> None:
+    """Verify is any filepath has been selected"""
+    try:
+        if path_var.get() == path_prompt or len(path_var.get()) == 0:
+            messagebox.showwarning(title="Warning", message=path_prompt)
+    except Exception as e:
+        print(e)
 
 
-def check_connection():
+def check_connection() -> None:
+    """Check if connection to ARSA can be established"""
     try:
         cases = app.Project.Structure.Cases.GetAll()
     except Exception:
         messagebox.showwarning(title="Warning", message="Cannot connect with Autodesk Robot!")
-        raise ValueError
+        root.destroy()
+        sys.exit()
 
 
-def import_loads():
+def on_exit() -> None:
+    app = None
+    root.destroy()
+
+
+def import_loads() -> None:
     check_connection()
     check_path()
     status_msg.set("Processing...")
@@ -58,7 +68,7 @@ def import_loads():
     )
 
 
-def export_loads():
+def export_loads() -> None:
     check_connection()
     check_path()
     status_msg.set("Processing...")
@@ -72,13 +82,9 @@ def export_loads():
     )
 
 
-def open_file():
+def open_file() -> None:
     file = fd.askopenfilename(filetypes=[("Excel", "*.xlsx")])
     path_var.set(file)
-
-
-def close_window():  # not used
-    root.destroy()
 
 
 # --------------------
@@ -161,4 +167,5 @@ info_label = tk.Label(
 info_label.pack()
 
 
+root.protocol("WM_DELETE_WINDOW", on_exit)
 root.mainloop()

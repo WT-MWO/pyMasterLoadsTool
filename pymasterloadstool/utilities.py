@@ -1,27 +1,31 @@
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.worksheet import Worksheet
+from typing import Any
 
 
-def clear_range(ws, range):
+def clear_range(ws, range: str) -> None:
+    """Clears a cell content in given range
+    Slow, do not use"""
     cell_range = ws[range]
     for row in cell_range:
         for cell in row:
             cell.value = None
 
 
-def get_key(dict, val):
+def get_key(dict: dict, val: Any) -> Any:
     for key, value in dict.items():
         if val == value:
             return key
 
 
-def clear_range2(ws, min_row=1, max_row=1, min_col=1, max_col=1):
-    "Clear range much faster"
+def clear_range2(ws: Worksheet, min_row: int = 1, max_row: int = 1, min_col: int = 1, max_col: int = 1) -> None:
+    """Clears a cell content in given range Fast runtime"""
     for row in ws.iter_rows(min_row, max_row, min_col, max_col):
         for cell in row:
             cell.value = None
 
 
-def max_row_index(ws, start_row=1, max_row=1, min_column=1, max_column=1):
+def max_row_index(ws: Worksheet, start_row: int = 1, max_row: int = 1, min_column: int = 1, max_column: int = 1) -> int:
     """Returns last row index containing data."""
     if start_row == 1:
         count = 1
@@ -34,7 +38,7 @@ def max_row_index(ws, start_row=1, max_row=1, min_column=1, max_column=1):
     return count
 
 
-def max_column_index(ws, start_col=1, min_row=1, max_row=1):
+def max_column_index(ws: Worksheet, start_col: int = 1, min_row: int = 1, max_row: int = 1) -> int:
     """Returns last column index containing data."""
     if start_col == 1:
         count = 1
@@ -47,13 +51,8 @@ def max_column_index(ws, start_col=1, min_row=1, max_row=1):
     return count
 
 
-def write_list_to_file(list, path, filename):
-    """Writes each item in list to new line in .txt file.
-    Parameters:
-        list(list): list with items
-        path(string):  path for txt file
-        filename(string): name for file
-    """
+def write_list_to_file(list: list, path: str, filename: str) -> None:
+    """Writes each item in list to new line in .txt file."""
     # Fix this function to write plain text without
     # parantesis always the same if its a set or list
     with open(path + filename, "w") as file:

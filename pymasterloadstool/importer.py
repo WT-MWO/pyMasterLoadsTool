@@ -8,6 +8,7 @@ import tkinter
 # from .pyLoad import pyLoad, missing_msg
 from openpyxl import Workbook, load_workbook
 from openpyxl.utils import get_column_letter
+from openpyxl.worksheet.worksheet import Worksheet
 
 cwd = os.getcwd()
 dll_path = cwd + "\dll\Interop.RobotOM.dll"
@@ -31,7 +32,7 @@ missing_msg = "MISSING!!"
 class Importer(Structure):
     """Reads the loads and combinations from the model, imports them as a list of pyLoad objects."""
 
-    def __init__(self, app, path):
+    def __init__(self, app: rbt.RobotApplicationClass, path: str) -> None:
         super().__init__(app)
         self.supported_load_types = supported_load_types
         self.path = path
@@ -40,54 +41,51 @@ class Importer(Structure):
 
     # rect = rbt.IRobotLoadRecordType
 
-    def messagebox(self, title, text):
-        """Warning type message box, closed with OK.
-        Arguments:
-        title(string) - title of the msgbox
-        text(string) - text to be inserted"""
+    def messagebox(self, title: str, text: str) -> None:
+        """Warning type message box, closed with OK."""
         root = tkinter.Tk()
         root.withdraw()
         tkinter.messagebox.showwarning(title, text)
         root.destroy()
 
-    def _read_cosystem(self, cosys):
+    def _read_cosystem(self, cosys: int) -> str:
         if cosys == 0:
             return "global"
         else:
             return "local"
 
-    def _read_calcnode(self, cnode):
+    def _read_calcnode(self, cnode: int) -> str:
         if cnode == 0:
             return "no"
         else:
             return "generated"
 
-    def _read_relabs(self, rela):
+    def _read_relabs(self, rela: int) -> str:
         if rela == 0:
             return "absolute"
         else:
             return "relative"
 
-    def _check_type(self, rec):
+    def _check_type(self, rec: rbt.IRobotLoadRecord) -> bool:
         rec_type = int(rec.Type)
         if rec_type in self.supported_load_types:
             return True
         else:
             return False
 
-    def _list_to_str(self, list):
+    def _list_to_str(self, list: list) -> str:
         return ", ".join(repr(e).replace("'", "") for e in list)
 
-    def is_comb_nonlinear(self, lcase):
-        """Checks if combination is nonlinear type.
-        Parameters: lcase: IRobotCaseCombination
+    def is_comb_nonlinear(self, lcase: rbt.IRobotCase) -> int:
+        """Checks if combination/case is nonlinear type.
+        Parameters: lcase: IRobotCase
         Returns: int"""
         if int(lcase.AnalizeType) == -1 or int(lcase.AnalizeType) == -3:
             return 1
         else:
             return 0
 
-    def _read_contour_points(self, rec):
+    def _read_contour_points(self, rec: rbt.IRobotLoadRecord) -> list[list, tuple]:
         """Reads contour points.
         Parameters: rec: IRobotLoadRecord
         Returns: list[contour_points, vector]"""
@@ -99,7 +97,7 @@ class Importer(Structure):
         vector = rec_contour.GetVector()
         return [contour_points, vector]
 
-    def _is_3points(self, rec):
+    def _is_3points(self, rec: rbt.IRobotLoadRecord) -> bool:
         """Checks if load on contour is variable type with 3 points
         Parameters: rec: IRobotLoadRecord
         Returns: boolean"""
@@ -113,7 +111,7 @@ class Importer(Structure):
             coord_list.append(coord[3])
         return any(coord_list)
 
-    def _write_contour_points(self, points, load_number, column_index):
+    def _write_contour_points(self, points: list, load_number: int, column_index: int) -> None:
         """Writes contour coordinates
         Parameters: points: list[tuples(x,y,z)]
                     loadnumber: int
@@ -135,7 +133,7 @@ class Importer(Structure):
             point_number += 1
             row += 1
 
-    def _write_3p_load_points(self, rec, column_index):
+    def _write_3p_load_points(self, rec: rbt.IRobotLoadRecord, column_index: int) -> None:
         """Writes 3p coordinates A,B,C for P1, P2, P3 load distribution
         Parameters: rec: IRobotLoadRecord
                     column_index: int"""
@@ -148,7 +146,7 @@ class Importer(Structure):
         self.ws_points[get_column_letter(column_index + 4) + "4"] = pointB
         self.ws_points[get_column_letter(column_index + 4) + "5"] = pointC
 
-    def _read_objects(self, rec):
+    def _read_objects(self, rec: rbt.IRobotLoadRecord) -> list:
         """Reads the objects to which the load is applied to. For example bar numbers.
         Parameters: rec: IRobotLoadRecord"""
         objects = []
@@ -182,7 +180,7 @@ class Importer(Structure):
                 objects.append("converted from body force objects, insert objects manually")
         return objects
 
-    def _write_load(self, lcase, rec, row, column_index):
+    def _write_load(self, lcase: rbt.IRobotCase, rec: rbt.IRobotLoadRecord, row: int, column_index: int) -> None:
         """Auxillary function, reads the load from the model, stores it in pyLoad object
         and returns them in list
         Parameters: lcase: IRobotCase,
@@ -323,7 +321,7 @@ class Importer(Structure):
                 self.ws["H" + str(row)] = "load 3p on contour"
                 self._write_3p_load_points(rec, column_index)
 
-    def _import_loadcases(self, cases):
+    def _import_loadcases(self, cases: rbt.IRobotCaseServer) -> None:
         """Writes loadcases to the excel sheet.
         Parameters: cases: IRobotCaseServer"""
         ws_cases = self.wb[cases_sheet_name]
@@ -378,9 +376,8 @@ class Importer(Structure):
             ws_comb[col_letter + "3"].value = lcase.Name
             ws_comb[col_letter + "4"].value = lcase.Number
             col_index += 1
-        # self.wb.save(self.path)
 
-    def _propagate_factors(self, ws, lcomb, row_index):
+    def _propagate_factors(self, ws: Worksheet, lcomb: rbt.IRobotCaseCombination, row_index: int) -> None:
         """Auxillary function to propagate factors for load combinations
         Parameters: ws: Workbook
                     lcomb: IRobotCaseCombination
@@ -404,7 +401,7 @@ class Importer(Structure):
             address = matching_column + str(row_index)
             ws[address].value = case_factor
 
-    def _import_combinations(self, cases):
+    def _import_combinations(self, cases: rbt.IRobotCaseServer) -> None:
         """Writes combinations to the excel sheet.
         Parameters: cases: IRobotCaseServer"""
         ws_comb = self.wb[combinations_sheet_name]
@@ -427,7 +424,7 @@ class Importer(Structure):
                 self._propagate_factors(ws=ws_comb, lcomb=lcomb, row_index=row)
                 row += 1
 
-    def _import_load(self, cases):
+    def _import_load(self, cases: rbt.IRobotCaseServer) -> None:
         """Imports loads from Robot model to the excel spreadsheet
         Parameters: cases: IRobotCaseServer"""
         start_row = 8
@@ -450,7 +447,7 @@ class Importer(Structure):
                                     column_index += 6
                                 start_row += 1
 
-    def import_loads_and_comb(self, import_loads, import_comb):
+    def import_loads_and_comb(self, import_loads: bool, import_comb: bool) -> None:
         "Main function, imports loads and combinations to Excel sheet."
         start_time = time.time()
         self.ws = self.wb[load_sheet_name]
