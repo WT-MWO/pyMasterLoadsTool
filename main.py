@@ -6,6 +6,7 @@ from tkinter import ttk
 from tkinter import messagebox
 from tkinter.filedialog import askopenfile
 import os
+import sys
 
 # clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 cwd = os.getcwd()
@@ -43,6 +44,7 @@ def check_connection() -> None:
     except Exception:
         messagebox.showwarning(title="Warning", message="Cannot connect with Autodesk Robot!")
         root.destroy()
+        sys.exit()
 
 
 def on_exit() -> None:
