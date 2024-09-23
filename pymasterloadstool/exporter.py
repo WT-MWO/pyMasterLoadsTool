@@ -200,15 +200,15 @@ class Exporter(Structure):
             if load_factor_X != 0:
                 sign = math.copysign(1, load_factor_X)
                 record.SetValue(0, sign)
-                record.SetValue(3, load_factor_X)
+                record.SetValue(3, abs(load_factor_X))
             elif load_factor_Y != 0:
                 sign = math.copysign(1, load_factor_Y)
                 record.SetValue(1, sign)
-                record.SetValue(3, load_factor_Y)
+                record.SetValue(3, abs(load_factor_Y))
             elif load_factor_Z != 0:
                 sign = math.copysign(1, load_factor_Z)
                 record.SetValue(2, sign)
-                record.SetValue(3, load_factor_Z)
+                record.SetValue(3, abs(load_factor_Z))
             record.Objects.FromText(str(objects))
         elif load_type == 0:  # nodal force
             record_index = case.Records.New(rbt.IRobotLoadRecordType(0))
@@ -298,13 +298,14 @@ class Exporter(Structure):
             record.SetValue(6, self.ws["R" + str(row)].value * deg_to_rad)  # gamma
             record.SetValue(11, self._assign_cosystem(self.ws["W" + str(row)].value))  # localsystem
         elif load_type == 89:  # "Body forces" # this is not used anymore
-            record_index = case.Records.New(rbt.IRobotLoadRecordType(89, True))
-            record = case.Records.Get(record_index)
-            # record.Objects.FromText(str(objects))
-            record.SetValue(0, self.ws["J" + str(row)].value * M)  # Px
-            record.SetValue(1, self.ws["K" + str(row)].value * M)  # Py
-            record.SetValue(2, self.ws["L" + str(row)].value * M)  # Pz
-            record.SetValue(13, self._assign_relabs(self.ws["X" + str(row)].value))  # relabs
+            # record_index = case.Records.New(rbt.IRobotLoadRecordType(89, True))
+            # record = case.Records.Get(record_index)
+            # # record.Objects.FromText(str(objects))
+            # record.SetValue(0, self.ws["J" + str(row)].value * M)  # Px
+            # record.SetValue(1, self.ws["K" + str(row)].value * M)  # Py
+            # record.SetValue(2, self.ws["L" + str(row)].value * M)  # Pz
+            # record.SetValue(13, self._assign_relabs(self.ws["X" + str(row)].value))  # relabs
+            pass
         elif load_type == 28:  # load on contour
             record_index = case.Records.New(rbt.IRobotLoadRecordType(28))
             record = rbt.IRobotLoadRecordInContour(case.Records.Get(record_index))

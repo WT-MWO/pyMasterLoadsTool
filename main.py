@@ -19,6 +19,11 @@ from pymasterloadstool import importer, exporter
 # TODO: add more error catching handlers
 # TODO: add Latex reporting
 # TODO: add screencapture
+
+# TODO: There is a problem with importing combinations
+# TODO: If loads are exported but no combinations, then loadcases should not be exported because the combinaitons are lost
+
+
 # --------------------
 # Functions
 # --------------------
