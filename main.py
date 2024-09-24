@@ -2,15 +2,13 @@ import clr
 import time
 import tkinter as tk
 from tkinter import filedialog as fd
-from tkinter import ttk
 from tkinter import messagebox
-from tkinter.filedialog import askopenfile
 import os
 import sys
 
 # clr.AddReference(r"C:\Program Files\Autodesk\Robot Structural Analysis Professional 2023\Exe\Interop.RobotOM.dll")
 cwd = os.getcwd()
-dll_path = cwd + "\dll\Interop.RobotOM.dll"
+dll_path = cwd + "/dll/Interop.RobotOM.dll"
 clr.AddReference(dll_path)
 from RobotOM import *
 import RobotOM as rbt
@@ -21,8 +19,8 @@ from pymasterloadstool import importer, exporter
 # TODO: write tests
 
 # TODO: There is a problem with importing combinations
-# TODO: If loads are exported but no combinations, then loadcases should not be exported because the combinaitons are lost
-
+# TODO: If loads are exported but no combinations, then loadcases should
+# not be exported because the combinaitons are lost
 # --------------------
 # Functions
 # --------------------
@@ -40,7 +38,7 @@ def check_path() -> None:
 def check_connection() -> None:
     """Check if connection to ARSA can be established"""
     try:
-        cases = app.Project.Structure.Cases.GetAll()
+        app.Project.Structure.Cases.GetAll()
     except Exception:
         messagebox.showwarning(title="Warning", message="Cannot connect with Autodesk Robot!")
         root.destroy()
