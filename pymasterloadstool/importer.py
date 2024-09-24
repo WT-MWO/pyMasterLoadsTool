@@ -370,12 +370,20 @@ class Importer(Structure):
                     else:
                         ws_cases["G" + str(row)] = 0
                 row += 1
-            # Propagating loadcases in combinations sheet
-            col_letter = get_column_letter(col_index)
-            # address_name = col_letter + "3"
-            ws_comb[col_letter + "3"].value = lcase.Name
-            ws_comb[col_letter + "4"].value = lcase.Number
-            col_index += 1
+
+    def _import_cases_in_combination_sheet(self, cases: rbt.IRobotCaseServer) -> None:
+        """Imports cases in top rows in combinations sheet"""
+        ws_comb = self.wb[combinations_sheet_name]
+        col_index = 8
+        for i in range(1, cases.Count + 1):  # loop1
+            lcase = rbt.IRobotCase(cases.Get(i))
+            if lcase.Type == rbt.IRobotCaseType.I_CT_SIMPLE:
+                # Propagating loadcases in combinations sheet
+                col_letter = get_column_letter(col_index)
+                # address_name = col_letter + "3"
+                ws_comb[col_letter + "3"].value = lcase.Name
+                ws_comb[col_letter + "4"].value = lcase.Number
+                col_index += 1
 
     def _propagate_factors(self, ws: Worksheet, lcomb: rbt.IRobotCaseCombination, row_index: int) -> None:
         """Auxillary function to propagate factors for load combinations
@@ -469,6 +477,7 @@ class Importer(Structure):
             utilities.clear_range2(
                 self.wb[combinations_sheet_name], min_row=7, max_row=476, min_col=1, max_col=500
             )  # Clearing combinations factors
+            self._import_cases_in_combination_sheet(cases)
             self._import_combinations(cases)
             print("Import combinations " + str(time.time() - start_time))
         if import_loads == 1:
@@ -479,4 +488,5 @@ class Importer(Structure):
             )  # Clearing load contour points
             self._import_load(cases)
             print("Import loads " + str(time.time() - start_time))
+            print("Finished.")
         self.wb.save(self.path)
