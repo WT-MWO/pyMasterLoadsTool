@@ -18,6 +18,7 @@ from pymasterloadstool import importer, exporter
 # TODO: add more error catching handlers
 # TODO: write tests
 
+# TODO: change the identification for contour points, from row number to manual input, this will avoid problems when additional rows are added and row no longer matches
 # TODO: If loads are exported but no combinations, then loadcases should
 # not be exported because the combinaitons are lost
 # --------------------

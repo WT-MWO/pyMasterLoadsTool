@@ -445,3 +445,4 @@ class Exporter(Structure):
             print
             self._export_combinations()
             print("Combinations exported. " + str(time.time() - start_time))
+            print("Finished.")

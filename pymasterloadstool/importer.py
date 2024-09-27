@@ -377,13 +377,12 @@ class Importer(Structure):
         col_index = 8
         for i in range(1, cases.Count + 1):  # loop1
             lcase = rbt.IRobotCase(cases.Get(i))
-            if lcase.Type == rbt.IRobotCaseType.I_CT_SIMPLE:
-                # Propagating loadcases in combinations sheet
-                col_letter = get_column_letter(col_index)
-                # address_name = col_letter + "3"
-                ws_comb[col_letter + "3"].value = lcase.Name
-                ws_comb[col_letter + "4"].value = lcase.Number
-                col_index += 1
+            # Propagating loadcases in combinations sheet
+            col_letter = get_column_letter(col_index)
+            # address_name = col_letter + "3"
+            ws_comb[col_letter + "3"].value = lcase.Name
+            ws_comb[col_letter + "4"].value = lcase.Number
+            col_index += 1
 
     def _propagate_factors(self, ws: Worksheet, lcomb: rbt.IRobotCaseCombination, row_index: int) -> None:
         """Auxillary function to propagate factors for load combinations
@@ -404,7 +403,7 @@ class Importer(Structure):
             case_factor = case_factor.Factor
             for row in ws[columns_range]:
                 for cell in row:
-                    if float(cell.value) == case_number:
+                    if int(cell.value) == case_number:
                         matching_column = str(cell.column_letter)
             address = matching_column + str(row_index)
             ws[address].value = case_factor
