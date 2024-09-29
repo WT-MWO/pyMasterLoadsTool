@@ -325,9 +325,7 @@ class Importer(Structure):
         """Writes loadcases to the excel sheet.
         Parameters: cases: IRobotCaseServer"""
         ws_cases = self.wb[cases_sheet_name]
-        ws_comb = self.wb[combinations_sheet_name]
         row = 7
-        col_index = 8
         for i in range(1, cases.Count + 1):  # loop1
             lcase = rbt.IRobotCase(cases.Get(i))
             if lcase.Type == rbt.IRobotCaseType.I_CT_SIMPLE:
