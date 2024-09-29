@@ -158,7 +158,7 @@ class Exporter(Structure):
                 )
                 load_points.append([point_number, cell.offset(0, 3).value])
                 point_number += 1
-        return points, load_points
+        return points, load_points[:3]
 
     def _assign_contour_points(
         self, load_record: rbt.IRobotLoadRecordInContour, row_id_number: int, is_3p: bool = False
