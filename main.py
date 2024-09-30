@@ -18,8 +18,6 @@ from pymasterloadstool import importer, exporter
 # TODO: add more error catching handlers
 # TODO: write tests
 
-# TODO: If loads are exported but no combinations, then loadcases should
-# not be exported because the combinaitons are lost
 # TODO: Split contour loads functions from export/import to separate class, for readability
 # --------------------
 # Functions

@@ -391,7 +391,7 @@ class Importer(Structure):
                     lcomb: IRobotCaseCombination
                     row_index: int"""
         # max column index containg cases
-        max_column_index = utilities.max_column_index(ws, 1, min_row=4, max_row=4)
+        max_column_index = utilities.max_column_index(ws, min_column=8, min_row=4, max_row=4)
         # get column letter
         col_letter = get_column_letter(max_column_index)
         columns_range = "H4:" + col_letter + "4"
