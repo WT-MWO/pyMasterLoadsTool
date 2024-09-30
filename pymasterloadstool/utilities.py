@@ -5,7 +5,7 @@ from typing import Any
 
 def clear_range(ws, range: str) -> None:
     """Clears a cell content in given range
-    Slow, do not use"""
+    Slow, do not use. OBSOLETE"""
     cell_range = ws[range]
     for row in cell_range:
         for cell in row:
@@ -13,6 +13,7 @@ def clear_range(ws, range: str) -> None:
 
 
 def get_key(dict: dict, val: Any) -> Any:
+    """Returns a key from dictionary from given value"""
     for key, value in dict.items():
         if val == value:
             return key
@@ -58,3 +59,8 @@ def write_list_to_file(list: list, path: str, filename: str) -> None:
     with open(path + filename, "w") as file:
         for item in list:
             file.write("{}\n".format(str(item)))
+
+
+def list_to_str(list: list) -> str:
+    """Returns string formatted as: 'a, b, 1, c,' from given list."""
+    return ", ".join(repr(e).replace("'", "") for e in list)

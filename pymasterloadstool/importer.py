@@ -73,9 +73,6 @@ class Importer(Structure):
         else:
             return False
 
-    def _list_to_str(self, list: list) -> str:
-        return ", ".join(repr(e).replace("'", "") for e in list)
-
     def is_comb_nonlinear(self, lcase: rbt.IRobotCase) -> int:
         """Checks if combination/case is nonlinear type.
         Parameters: lcase: IRobotCase
@@ -194,7 +191,9 @@ class Importer(Structure):
         self.ws["B" + str(row)] = lcase.Name
         self.ws["A" + str(row)] = lcase.Number
         self.ws["H" + str(row)] = self.supported_load_types[rec_type]
-        self.ws["I" + str(row)] = self._list_to_str(self._read_objects(rec))  # read the objects load is assigned to
+        self.ws["I" + str(row)] = utilities._list_to_str(
+            self._read_objects(rec)
+        )  # read the objects load is assigned to
         if rec_type == 0 or rec_type == 3:  # nodal force or point load on a bar
             self.ws["J" + str(row)] = round(rec.GetValue(0) / U, R)  # I_NFIPRV_FX
             self.ws["K" + str(row)] = round(rec.GetValue(1) / U, R)  # I_NFIPRV_FY

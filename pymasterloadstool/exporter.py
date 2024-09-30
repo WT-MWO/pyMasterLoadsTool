@@ -127,16 +127,14 @@ class Exporter(Structure):
             return 1
 
     def _get_contour_column_number(self, row_id_number: int) -> int:
-        """Searches the first row of the Contour load data sheet and returns column number for matching row (load) id"""
+        """Searches the first row of the 'Contour load data' sheet and returns column number for matching row (load) id"""
         for row in self.ws_points.iter_rows(1, 1, 1, 500):
             for cell in row:
                 if cell.data_type == "s":
                     if cell.value == str(row_id_number):
-                        # print(cell.data_type)
                         return cell.column
                 elif cell.data_type == "n":
                     if cell.value == row_id_number:
-                        # print(cell.data_type)
                         return cell.column
 
     def _get_contour_points(self, row_id_number: int) -> list[list, list]:
