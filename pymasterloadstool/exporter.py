@@ -355,7 +355,7 @@ class Exporter(Structure):
             for cell in row:
                 self._assign_loads(cell)
 
-    def _read_combinations(self) -> None:
+    def _read_combinations(self) -> list:
         """Read excel input and store it in a list"""
         self.ws_comb = self.wb[combinations_sheet_name]
         start_row = 7
