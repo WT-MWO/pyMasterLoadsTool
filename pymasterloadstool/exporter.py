@@ -158,18 +158,14 @@ class Exporter(Structure):
                 )
                 load_points.append([point_number, cell.offset(0, 3).value])
                 point_number += 1
-        return points, load_points[:3]
+        return points, load_points
 
     def _assign_contour_points(
-        self,
-        load_record: rbt.IRobotLoadRecordInContour,
-        row_id_number: int,
-        contour_index: int,
-        is_3p: bool = False,
+        self, load_record: rbt.IRobotLoadRecordInContour, row_id_number: int, is_3p: bool = False
     ) -> None:
         """Assigns contour points and the 3p contour loads corners, A, B, C"""
-        points = self._get_contour_points(contour_index)[0]
-        load_points = self._get_contour_points(contour_index)[1]
+        points = self._get_contour_points(row_id_number)[0]
+        load_points = self._get_contour_points(row_id_number)[1]
         nsize = len(points)
         load_record.SetValue(13, nsize)  # assign size for point array I_ICRV_NPOINTS
         for point in points:
@@ -193,7 +189,6 @@ class Exporter(Structure):
             load_type = list(supported_load_types.keys())[list(supported_load_types.values()).index(name)]
         case_number = self.ws["A" + str(row)].value
         objects = self.ws["I" + str(row)].value
-        contour_index = self.ws["Z" + str(row)].value
         case = rbt.IRobotSimpleCase(self.structure.Cases.Get(case_number))
         if load_type == 7:  # self-weight
             record_index = case.Records.New(rbt.IRobotLoadRecordType(7))
@@ -337,12 +332,7 @@ class Exporter(Structure):
                 record.SetValue(7, self.ws["T" + str(row)].value * M)  # Py3
                 record.SetValue(8, self.ws["U" + str(row)].value * M)  # Pz3
                 is_3p = True
-            self._assign_contour_points(
-                record,
-                row,
-                contour_index,
-                is_3p,
-            )
+            self._assign_contour_points(record, row, is_3p)
         elif load_type == 22:  # load planar trapez TODO: to be implemented
             # record_index = case.Records.New(rbt.IRobotLoadRecordType(22))
             # record = case.Records.Get(record_index)
