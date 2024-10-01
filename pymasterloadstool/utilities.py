@@ -3,15 +3,6 @@ from openpyxl.worksheet.worksheet import Worksheet
 from typing import Any
 
 
-def clear_range(ws, range: str) -> None:
-    """Clears a cell content in given range
-    Slow, do not use. OBSOLETE"""
-    cell_range = ws[range]
-    for row in cell_range:
-        for cell in row:
-            cell.value = None
-
-
 def get_key(dict: dict, val: Any) -> Any:
     """Returns a key from dictionary from given value"""
     for key, value in dict.items():

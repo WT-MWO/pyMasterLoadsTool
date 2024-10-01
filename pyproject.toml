@@ -9,6 +9,7 @@ readme = "README.md"
 python = ">=3.11,<3.13"
 openpyxl = "^3.1.5"
 pythonnet = "^3.0.3"
+pytest = "^8.3.3"
 
 
 [build-system]
