@@ -108,7 +108,7 @@ class Importer(Structure):
             coord_list.append(coord[3])
         return any(coord_list)
 
-    def _write_contour_points(self, points: list, load_number: int, column_index: int, contour_index: int) -> None:
+    def _write_contour_points(self, points: list, column_index: int, contour_index: int) -> None:
         """Writes contour coordinates
         Parameters: points: list[tuples(x,y,z)]
                     loadnumber: int
