@@ -33,7 +33,7 @@ def max_row_index(ws: Worksheet, start_row: int = 1, max_row: int = 1, min_colum
 def max_column_index(ws: Worksheet, min_column: int = 1, min_row: int = 1, max_row: int = 1) -> int:
     """Returns last column index containing data."""
     if min_column == 1:
-        count = 1
+        count = 0
     else:
         count = min_column - 1
     for col in ws.iter_cols(min_row=min_row, min_col=min_column, max_col=ws.max_column, max_row=max_row):

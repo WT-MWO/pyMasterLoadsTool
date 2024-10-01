@@ -20,6 +20,7 @@ class TestUtilities:
         ws["C1"] = "zxa"
         ws["D1"] = "zxa"
         assert utilities.max_column_index(ws, 1, 1, 1) == 4
+        assert utilities.max_column_index(ws, 2, 1, 1) == 4
 
     def test_list_to_str(self):
         test_list = ["4", "5", "acv", "yts", 6, 7.0]
