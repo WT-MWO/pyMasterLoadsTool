@@ -34,12 +34,10 @@ class Importer(Structure):
 
     def __init__(self, app: rbt.RobotApplicationClass, path: str) -> None:
         super().__init__(app)
-        self.supported_load_types = supported_load_types
+        # self.supported_load_types = supported_load_types
         self.path = path
         self.wb = load_workbook(self.path)
         self.ws_points = self.wb[points_sheet_name]
-
-    # rect = rbt.IRobotLoadRecordType
 
     def messagebox(self, title: str, text: str) -> None:
         """Warning type message box, closed with OK."""
@@ -48,35 +46,48 @@ class Importer(Structure):
         tkinter.messagebox.showwarning(title, text)
         root.destroy()
 
-    def _read_cosystem(self, cosys: int) -> str:
-        if cosys == 0:
-            return "global"
-        else:
+    @staticmethod
+    def _read_cosystem(cosys: int) -> str:
+        """Reads if load is applied in local or global coordination system"""
+        if cosys is None:
+            raise ValueError
+        if cosys == 1:
             return "local"
-
-    def _read_calcnode(self, cnode: int) -> str:
-        if cnode == 0:
-            return "no"
         else:
+            return "global"
+
+    @staticmethod
+    def _read_calcnode(cnode: int) -> str:
+        """Reads if the calculation node was generated for the load record."""
+        if cnode is None:
+            raise ValueError
+        if cnode == 1:
             return "generated"
-
-    def _read_relabs(self, rela: int) -> str:
-        if rela == 0:
-            return "absolute"
         else:
-            return "relative"
+            return "no"
 
-    def _check_type(self, rec: rbt.IRobotLoadRecord) -> bool:
+    @staticmethod
+    def _read_relabs(rela: int) -> str:
+        """Reads relative or absolute coordination system parameter in Load record."""
+        if rela is None:
+            raise ValueError
+        if rela == 1:
+            return "relative"
+        else:
+            return "absolute"
+
+    @staticmethod
+    def _check_type(rec: rbt.IRobotLoadRecord) -> bool:
+        if type(rec.Type) is not int:
+            raise ValueError
         rec_type = int(rec.Type)
-        if rec_type in self.supported_load_types:
+        if rec_type in supported_load_types:
             return True
         else:
             return False
 
-    def _list_to_str(self, list: list) -> str:
-        return ", ".join(repr(e).replace("'", "") for e in list)
-
-    def is_comb_nonlinear(self, lcase: rbt.IRobotCase) -> int:
+    @staticmethod
+    def is_comb_nonlinear(lcase: rbt.IRobotCase) -> int:
         """Checks if combination/case is nonlinear type.
         Parameters: lcase: IRobotCase
         Returns: int"""
@@ -111,7 +122,7 @@ class Importer(Structure):
             coord_list.append(coord[3])
         return any(coord_list)
 
-    def _write_contour_points(self, points: list, load_number: int, column_index: int, contour_index: int) -> None:
+    def _write_contour_points(self, points: list, column_index: int, contour_index: int) -> None:
         """Writes contour coordinates
         Parameters: points: list[tuples(x,y,z)]
                     loadnumber: int
@@ -194,7 +205,9 @@ class Importer(Structure):
         self.ws["B" + str(row)] = lcase.Name
         self.ws["A" + str(row)] = lcase.Number
         self.ws["H" + str(row)] = self.supported_load_types[rec_type]
-        self.ws["I" + str(row)] = self._list_to_str(self._read_objects(rec))  # read the objects load is assigned to
+        self.ws["I" + str(row)] = utilities._list_to_str(
+            self._read_objects(rec)
+        )  # read the objects load is assigned to
         if rec_type == 0 or rec_type == 3:  # nodal force or point load on a bar
             self.ws["J" + str(row)] = round(rec.GetValue(0) / U, R)  # I_NFIPRV_FX
             self.ws["K" + str(row)] = round(rec.GetValue(1) / U, R)  # I_NFIPRV_FY

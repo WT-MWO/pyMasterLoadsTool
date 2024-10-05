@@ -107,6 +107,7 @@ class Exporter(Structure):
                 else:
                     params.PDelta = False
                 case.SetAnalysisParams(params)
+            case.label = str(number)  # This is ridiculous that its 'label' not 'Label'
 
     def _assign_cosystem(self, cosystem_str: str) -> int:
         if cosystem_str == "global":
@@ -127,16 +128,14 @@ class Exporter(Structure):
             return 1
 
     def _get_contour_column_number(self, row_id_number: int) -> int:
-        """Searches the first row of the Contour load data sheet and returns column number for matching row (load) id"""
+        """Searches the first row of the 'Contour load data' sheet and returns column number for matching row (load) id"""
         for row in self.ws_points.iter_rows(1, 1, 1, 500):
             for cell in row:
                 if cell.data_type == "s":
                     if cell.value == str(row_id_number):
-                        # print(cell.data_type)
                         return cell.column
                 elif cell.data_type == "n":
                     if cell.value == row_id_number:
-                        # print(cell.data_type)
                         return cell.column
 
     def _get_contour_points(self, row_id_number: int) -> list[list, list]:
@@ -370,7 +369,7 @@ class Exporter(Structure):
         self.ws_comb = self.wb[combinations_sheet_name]
         start_row = 7
         row_count = max_row_index(self.ws_comb, start_row, max_column=1)
-        max_col = max_column_index(self.ws_comb, start_col=1, min_row=3, max_row=3)
+        max_col = max_column_index(self.ws_comb, min_column=1, min_row=3, max_row=3)
         combinations_range = "A" + str(start_row) + ":" + "A" + str(row_count)
         combinations = []
         for row in self.ws_comb[combinations_range]:
@@ -418,7 +417,8 @@ class Exporter(Structure):
             factors = c[7]
             cases = self.structure.Cases
             combination = cases.CreateCombination(comb_number, comb_name, comb_type, comb_nature, comb_analize_type)
-            if comb_analize_type == 1:
+            combination.label = str(comb_number)
+            if comb_analize_type == -1:
                 params = rbt.IRobotNonlinearAnalysisParams(combination.GetAnalysisParams())
                 if kmatrix == 1:
                     params.MatrixUpdateAfterEachIteration = True

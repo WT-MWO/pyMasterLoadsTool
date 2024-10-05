@@ -3,16 +3,8 @@ from openpyxl.worksheet.worksheet import Worksheet
 from typing import Any
 
 
-def clear_range(ws, range: str) -> None:
-    """Clears a cell content in given range
-    Slow, do not use"""
-    cell_range = ws[range]
-    for row in cell_range:
-        for cell in row:
-            cell.value = None
-
-
 def get_key(dict: dict, val: Any) -> Any:
+    """Returns a key from dictionary from given value"""
     for key, value in dict.items():
         if val == value:
             return key
@@ -41,7 +33,7 @@ def max_row_index(ws: Worksheet, start_row: int = 1, max_row: int = 1, min_colum
 def max_column_index(ws: Worksheet, min_column: int = 1, min_row: int = 1, max_row: int = 1) -> int:
     """Returns last column index containing data."""
     if min_column == 1:
-        count = 1
+        count = 0
     else:
         count = min_column - 1
     for col in ws.iter_cols(min_row=min_row, min_col=min_column, max_col=ws.max_column, max_row=max_row):
@@ -58,3 +50,8 @@ def write_list_to_file(list: list, path: str, filename: str) -> None:
     with open(path + filename, "w") as file:
         for item in list:
             file.write("{}\n".format(str(item)))
+
+
+def list_to_str(list: list) -> str:
+    """Returns string formatted as: 'a, b, 1, c,' from given list."""
+    return ", ".join(repr(e).replace("'", "") for e in list)
