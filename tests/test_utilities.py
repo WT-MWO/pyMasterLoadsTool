@@ -1,4 +1,3 @@
-import pytest
 from pymasterloadstool import utilities
 from openpyxl import Workbook
 from openpyxl.worksheet.worksheet import Worksheet
