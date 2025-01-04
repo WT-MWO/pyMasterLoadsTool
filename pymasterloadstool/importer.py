@@ -78,8 +78,10 @@ class Importer(Structure):
 
     @staticmethod
     def _check_type(rec: rbt.IRobotLoadRecord) -> bool:
-        if type(rec.Type) is not int:
-            raise ValueError
+        # print(rec.Type)
+        # print(type(rec.Type))
+        # if type(rec.Type) is not int:
+        #     raise ValueError
         rec_type = int(rec.Type)
         if rec_type in supported_load_types:
             return True
@@ -204,10 +206,8 @@ class Importer(Structure):
         rec_type = int(rec.Type)  # cast it as a int
         self.ws["B" + str(row)] = lcase.Name
         self.ws["A" + str(row)] = lcase.Number
-        self.ws["H" + str(row)] = self.supported_load_types[rec_type]
-        self.ws["I" + str(row)] = utilities._list_to_str(
-            self._read_objects(rec)
-        )  # read the objects load is assigned to
+        self.ws["H" + str(row)] = supported_load_types[rec_type]
+        self.ws["I" + str(row)] = utilities.list_to_str(self._read_objects(rec))  # read the objects load is assigned to
         if rec_type == 0 or rec_type == 3:  # nodal force or point load on a bar
             self.ws["J" + str(row)] = round(rec.GetValue(0) / U, R)  # I_NFIPRV_FX
             self.ws["K" + str(row)] = round(rec.GetValue(1) / U, R)  # I_NFIPRV_FY
